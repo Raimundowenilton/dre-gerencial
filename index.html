@@ -6,6 +6,8 @@
 <title>DRE Gerencial</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -178,6 +180,7 @@ tr:hover td{background:var(--surface2)}
     <div class="tabs" id="main-tabs">
       <button class="tab active" onclick="switchTab('dre')" id="tab-dre"><i class="ti ti-file-analytics"></i> DRE</button>
       <button class="tab" onclick="switchTab('fluxo')" id="tab-fluxo"><i class="ti ti-cash"></i> Fluxo de Caixa</button>
+      <button class="tab" onclick="switchTab('graficos')" id="tab-graficos"><i class="ti ti-chart-line"></i> Gráficos</button>
       <button class="tab" onclick="switchTab('lancamentos')" id="tab-lancamentos" style="display:none"><i class="ti ti-list"></i> Lançamentos</button>
       <button class="tab" onclick="switchTab('recorrentes')" id="tab-recorrentes" style="display:none"><i class="ti ti-repeat"></i> Fixas/Variáveis</button>
       <button class="tab" onclick="switchTab('projecao')" id="tab-projecao" style="display:none"><i class="ti ti-trending-up"></i> Projeção</button>
@@ -200,6 +203,10 @@ tr:hover td{background:var(--surface2)}
     <div id="panel-dre" class="panel active">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
         <div style="font-size:12px;color:var(--text2)" id="dre-click-hint"></div>
+        <div style="display:flex;gap:6px">
+          <button class="btn sm" onclick="exportDREPDF()"><i class="ti ti-file-type-pdf"></i> PDF</button>
+          <button class="btn sm" onclick="exportDREExcel()"><i class="ti ti-file-spreadsheet"></i> Excel</button>
+        </div>
         <div style="display:flex;gap:8px;align-items:center">
           <select id="dre-mes" onchange="renderDRE()" style="width:160px">
             <option value="0">Ano completo</option>
@@ -220,6 +227,10 @@ tr:hover td{background:var(--surface2)}
     <div id="panel-fluxo" class="panel">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
         <div style="font-size:13px;font-weight:600;color:var(--text2)">Fluxo de Caixa por Competência — mensal</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn sm" onclick="exportFluxoPDF()"><i class="ti ti-file-type-pdf"></i> PDF</button>
+          <button class="btn sm" onclick="exportFluxoExcel()"><i class="ti ti-file-spreadsheet"></i> Excel</button>
+        </div>
         <div style="display:flex;gap:8px;align-items:center">
           <input id="fc-ano" type="number" value="2026" min="2020" max="2040" onchange="renderFluxo()" style="width:90px"/>
           <button class="btn sm" onclick="renderFluxo()"><i class="ti ti-refresh"></i> Atualizar</button>
@@ -230,6 +241,28 @@ tr:hover td{background:var(--surface2)}
       </div>
       <!-- CARDS RESUMO ANUAL -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px" id="fc-resumo"></div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div id="panel-graficos" class="panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div style="font-size:13px;font-weight:600;color:var(--text2)">Análise gráfica — evolução mensal</div>
+        <input id="graf-ano" type="number" value="2026" min="2020" max="2040" onchange="renderGraficos()" style="width:90px"/>
+      </div>
+      <div class="grid2" style="margin-bottom:14px">
+        <div class="card">
+          <div class="card-title"><i class="ti ti-trending-up"></i> Receitas vs Despesas (mensal)</div>
+          <canvas id="chart-receita-despesa" height="220"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-chart-bar"></i> Resultado líquido por mês</div>
+          <canvas id="chart-resultado" height="220"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-chart-line"></i> Saldo acumulado ao longo do ano</div>
+        <canvas id="chart-acumulado" height="140"></canvas>
+      </div>
     </div>
 
     <!-- LANÇAMENTOS -->
@@ -594,6 +627,7 @@ function switchTab(t){
   if(t==='projecao')renderProjecoes();
   if(t==='configuracoes')loadConfiguracoes();
   if(t==='usuarios')renderUsuarios();
+  if(t==='graficos')renderGraficos();
 }
 
 function fmt(v){return'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
@@ -968,6 +1002,172 @@ async function remUsuario(id){if(!confirm('Remover?'))return;await sb.from('user
 
 function closeModal(e,force){if(force||e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('open');}
 function closeRecibo(e,force){if(force||e.target===document.getElementById('recibo-overlay'))document.getElementById('recibo-overlay').classList.remove('open');}
+
+// GRÁFICOS
+let chartRD=null,chartRes=null,chartAcum=null;
+async function renderGraficos(){
+  const ano=parseInt(document.getElementById('graf-ano').value)||2026;
+  const all=await getAllData(ano);
+  const mesesLabel=MESES.slice(1);
+  const porMes=Array.from({length:12},(_,i)=>{
+    const m=i+1,items=all.filter(x=>x.mes===m);
+    const sum=t=>items.filter(x=>x.tipo===t).reduce((a,b)=>a+b.valor,0);
+    const rec=sum('receita'),ded=sum('deducao'),cus=sum('custo'),da=sum('despesa_adm')+sum('despesa_com'),fd=sum('fin_desp'),fr=sum('fin_rec');
+    const res=rec-ded-cus-da-fd+fr;
+    return{rec,desp:cus+da+fd,res};
+  });
+  const recs=porMes.map(m=>parseFloat(m.rec.toFixed(2)));
+  const desps=porMes.map(m=>parseFloat(m.desp.toFixed(2)));
+  const ress=porMes.map(m=>parseFloat(m.res.toFixed(2)));
+  let acum=0;const acums=ress.map(v=>{acum+=v;return parseFloat(acum.toFixed(2));});
+
+  const opts={responsive:true,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.parsed.y)}}},scales:{y:{ticks:{callback:v=>'R$'+Math.abs(v/1000).toFixed(0)+'k'}}}};
+
+  if(chartRD){chartRD.destroy();}
+  chartRD=new Chart(document.getElementById('chart-receita-despesa'),{type:'bar',data:{labels:mesesLabel,datasets:[{label:'Receitas',data:recs,backgroundColor:'rgba(59,109,17,.7)',borderRadius:4},{label:'Despesas',data:desps,backgroundColor:'rgba(163,45,45,.7)',borderRadius:4}]},options:{...opts,plugins:{...opts.plugins}}});
+
+  if(chartRes){chartRes.destroy();}
+  chartRes=new Chart(document.getElementById('chart-resultado'),{type:'bar',data:{labels:mesesLabel,datasets:[{label:'Resultado',data:ress,backgroundColor:ress.map(v=>v>=0?'rgba(59,109,17,.75)':'rgba(163,45,45,.75)'),borderRadius:4}]},options:{...opts}});
+
+  if(chartAcum){chartAcum.destroy();}
+  chartAcum=new Chart(document.getElementById('chart-acumulado'),{type:'line',data:{labels:mesesLabel,datasets:[{label:'Saldo acumulado',data:acums,borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,.1)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:acums.map(v=>v>=0?'#3B6D11':'#A32D2D')}]},options:{...opts,plugins:{...opts.plugins}}});
+}
+
+// EXPORTAR PDF - DRE
+function exportDREPDF(){
+  const ano=document.getElementById('dre-ano').value;
+  const mes=document.getElementById('dre-mes').value;
+  const label=mes==='0'?`Acumulado ${ano}`:MESES[mes]+'/'+ano;
+  const tbl=document.querySelector('#dre-content table');
+  if(!tbl)return alert('Gere o DRE primeiro.');
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>DRE ${label}</title>
+  <style>body{font-family:Arial,sans-serif;font-size:12px;color:#1a1d23;padding:20px}
+  h2{font-size:16px;margin-bottom:4px}p{font-size:11px;color:#666;margin-bottom:16px}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;padding:6px 8px;border-bottom:2px solid #333;font-size:11px;color:#555}
+  th:last-child{text-align:right}
+  td{padding:5px 8px;border-bottom:1px solid #e2e6ea}
+  td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+  tr.grp td{font-weight:700;background:#f1f3f6}
+  tr.sub td{padding-left:24px;color:#5a6072;font-size:11px}
+  tr.subtotal td{font-weight:700;border-top:2px solid #c8cdd4;background:#fafbfc}
+  tr.grand td{font-weight:700;font-size:13px;background:#E6F1FB;color:#0C447C}
+  tr.spacer td{height:4px;background:#f4f6f9;border:none}
+  .pos{color:#3B6D11}.neg{color:#A32D2D}
+  @media print{@page{margin:1.5cm}}</style></head><body>
+  <h2>Demonstrativo de Resultado do Exercício — DRE</h2>
+  <p>Período: ${label} &nbsp;|&nbsp; Gerado em: ${new Date().toLocaleDateString('pt-BR')}</p>
+  ${tbl.outerHTML}
+  <script>window.onload=()=>{window.print();}<\/script></body></html>`);
+  w.document.close();
+}
+
+// EXPORTAR PDF - FLUXO
+function exportFluxoPDF(){
+  const tbl=document.querySelector('#fluxo-content table');
+  if(!tbl)return alert('Gere o Fluxo de Caixa primeiro.');
+  const ano=document.getElementById('fc-ano').value;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Fluxo de Caixa ${ano}</title>
+  <style>body{font-family:Arial,sans-serif;font-size:11px;color:#1a1d23;padding:16px}
+  h2{font-size:15px;margin-bottom:4px}p{font-size:10px;color:#666;margin-bottom:14px}
+  table{width:100%;border-collapse:collapse}
+  th{padding:5px 6px;border-bottom:2px solid #333;font-size:10px;color:#555;text-align:right;white-space:nowrap}
+  th:first-child{text-align:left}
+  td{padding:4px 6px;border-bottom:1px solid #e2e6ea;text-align:right;white-space:nowrap}
+  td:first-child{text-align:left}
+  tr.fc-grp td{font-weight:700;background:#f1f3f6}
+  tr.fc-sub td{color:#5a6072;font-size:10px}
+  tr.fc-sub td:first-child{padding-left:16px}
+  tr.fc-total td{font-weight:700;border-top:2px solid #c8cdd4;background:#fafbfc}
+  tr.fc-saldo td{font-weight:700;background:#E6F1FB;color:#0C447C}
+  tr.fc-acum td{font-weight:600;background:#EAF3DE;color:#27500A}
+  .fc-col-neg{color:#A32D2D}.fc-col-pos{color:#3B6D11}
+  @media print{@page{size:landscape;margin:1cm}}</style></head><body>
+  <h2>Fluxo de Caixa por Competência</h2>
+  <p>Ano: ${ano} &nbsp;|&nbsp; Gerado em: ${new Date().toLocaleDateString('pt-BR')}</p>
+  ${tbl.outerHTML}
+  <script>window.onload=()=>{window.print();}<\/script></body></html>`);
+  w.document.close();
+}
+
+// EXPORTAR EXCEL - DRE
+async function exportDREExcel(){
+  const ano=parseInt(document.getElementById('dre-ano').value)||2026;
+  const mes=parseInt(document.getElementById('dre-mes').value);
+  const all=(await getAllData(ano)).filter(i=>mes===0||i.mes===mes);
+  const sum=t=>all.filter(i=>i.tipo===t).reduce((a,b)=>a+b.valor,0);
+  const label=mes===0?`Acumulado ${ano}`:MESES[mes]+'/'+ano;
+  const rec=sum('receita'),ded=sum('deducao'),recLiq=rec-ded,cus=sum('custo'),lb=recLiq-cus;
+  const dc=sum('despesa_com'),da=sum('despesa_adm'),lop=lb-dc-da;
+  const fr=sum('fin_rec'),fd=sum('fin_desp'),res=lop+fr-fd;
+  const rows=[
+    ['DRE — '+label,''],['Categoria','Valor'],
+    ['Receitas operacionais',rec],['  Receita de vendas',rec],
+    ['(−) Deduções da receita bruta',-ded],['  Descontos e devoluções',-ded],
+    ['Receita líquida de vendas',recLiq],
+    ['(−) Custos operacionais',-cus],['  Custo das vendas',-cus],
+    ['Lucro bruto',lb],
+    ['(−) Despesas operacionais',-(dc+da)],['  Despesas comerciais',-dc],['  Despesas administrativas',-da],
+    ['Lucro / Prejuízo operacional',lop],
+    ['Receitas financeiras',fr],['(−) Despesas financeiras',-fd],
+    ['RESULTADO LÍQUIDO DO EXERCÍCIO',res]
+  ];
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:40},{wch:18}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'DRE');
+  XLSX.writeFile(wb,`DRE_${label.replace('/','_')}.xlsx`);
+}
+
+// EXPORTAR EXCEL - FLUXO
+async function exportFluxoExcel(){
+  const ano=parseInt(document.getElementById('fc-ano').value)||2026;
+  const all=await getAllData(ano);
+  const cols=Array.from({length:12},(_,i)=>i+1);
+  const porMes={};
+  cols.forEach(m=>{
+    const items=all.filter(i=>i.mes===m);
+    const sum=t=>items.filter(i=>i.tipo===t).reduce((a,b)=>a+b.valor,0);
+    const rec=sum('receita'),ded=sum('deducao'),recLiq=rec-ded,cus=sum('custo'),lb=recLiq-cus;
+    const dc=sum('despesa_com'),da=sum('despesa_adm'),desp=dc+da,lop=lb-desp;
+    const fr=sum('fin_rec'),fd=sum('fin_desp'),res=lop+fr-fd;
+    porMes[m]={rec,ded,recLiq,cus,lb,dc,da,desp,lop,fr,fd,res};
+  });
+  let acum=0;
+  const header=['Categoria',...cols.map(m=>MESES[m]),'Total'];
+  const makeRow=(label,key,neg=false)=>{
+    const vals=cols.map(m=>neg?-porMes[m][key]:porMes[m][key]);
+    return[label,...vals,vals.reduce((a,b)=>a+b,0)];
+  };
+  let acumRow=['Saldo acumulado'];
+  cols.forEach(m=>{acum+=porMes[m].res;acumRow.push(acum);});acumRow.push('');
+  const rows=[
+    [`Fluxo de Caixa por Competência — ${ano}`],
+    header,
+    ['ENTRADAS',...cols.map(()=>''),''],
+    makeRow('Receita operacional','rec'),
+    makeRow('(−) Deduções','ded',true),
+    makeRow('Receita líquida','recLiq'),
+    ['SAÍDAS',...cols.map(()=>''),''],
+    makeRow('(−) Custos operacionais','cus',true),
+    makeRow('(−) Despesas comerciais','dc',true),
+    makeRow('(−) Despesas administrativas','da',true),
+    makeRow('Total saídas','desp',true),
+    makeRow('RESULTADO OPERACIONAL','lop'),
+    ['FINANCEIRO',...cols.map(()=>''),''],
+    makeRow('Receitas financeiras','fr'),
+    makeRow('(−) Despesas financeiras','fd',true),
+    makeRow('SALDO DO PERÍODO','res'),
+    acumRow
+  ];
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:30},...cols.map(()=>({wch:12})),{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Fluxo de Caixa');
+  XLSX.writeFile(wb,`FluxoCaixa_${ano}.xlsx`);
+}
 
 init();
 </script>
