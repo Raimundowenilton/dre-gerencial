@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>DRE Gerencial</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f8f9fa;--surface:#fff;--surface2:#f1f3f5;--border:#e0e3e7;--border2:#c8ccd2;
+  --bg:#f4f6f9;--surface:#fff;--surface2:#f1f3f6;--border:#e2e6ea;--border2:#c8cdd4;
   --text:#1a1d23;--text2:#5a6072;--text3:#9ba3b2;
   --blue:#185FA5;--blue-bg:#E6F1FB;--blue-text:#0C447C;
   --green:#3B6D11;--green-bg:#EAF3DE;--green-text:#27500A;
@@ -19,46 +20,63 @@
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg);min-height:100vh}
 
+/* AUTH */
+.auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f2942 0%,#185FA5 100%)}
+.auth-card{background:#fff;border-radius:16px;padding:36px 40px;width:400px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.auth-logo{text-align:center;margin-bottom:28px}
+.auth-logo i{font-size:40px;color:var(--blue)}
+.auth-logo h1{font-size:22px;font-weight:700;margin-top:8px;color:var(--text)}
+.auth-logo p{font-size:13px;color:var(--text2);margin-top:4px}
+.auth-error{background:var(--red-bg);color:var(--red-text);border-radius:var(--radius);padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+
 /* TOPBAR */
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:50}
-.topbar-brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px}
-.topbar-brand i{font-size:22px;color:var(--blue)}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:50;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.topbar-brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:var(--blue)}
+.topbar-brand i{font-size:22px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.user-chip{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text2)}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:var(--blue-bg);color:var(--blue-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.role-badge{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.role-badge.admin{background:var(--blue-bg);color:var(--blue-text)}
+.role-badge.viewer{background:var(--surface2);color:var(--text2)}
+
+/* TABS */
 .tabs{display:flex;gap:2px;background:var(--surface2);border-radius:var(--radius);padding:3px}
-.tab{padding:6px 14px;border-radius:6px;border:none;background:transparent;font-size:13px;cursor:pointer;color:var(--text2);font-family:inherit;display:flex;align-items:center;gap:5px;transition:all .15s}
-.tab.active{background:var(--surface);color:var(--text);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tab{padding:6px 13px;border-radius:6px;border:none;background:transparent;font-size:13px;cursor:pointer;color:var(--text2);font-family:inherit;display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap}
+.tab.active{background:#fff;color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .tab:hover:not(.active){background:rgba(0,0,0,.04)}
 
 /* LAYOUT */
 .content{padding:20px;max-width:1280px;margin:0 auto}
 .panel{display:none}.panel.active{display:block}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 
 /* CARDS */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px}
-.card-title{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px}
+.card-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:14px;display:flex;align-items:center;gap:6px}
 .metric-card{background:var(--surface2);border-radius:var(--radius);padding:14px;text-align:center}
 .metric-label{font-size:11px;color:var(--text3);margin-bottom:4px}
-.metric-value{font-size:20px;font-weight:600}
+.metric-value{font-size:20px;font-weight:700}
 
 /* FORM */
 label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;margin-top:12px;font-weight:500}
-label:first-child,label.first{margin-top:0}
-input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text);transition:border-color .15s}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,.1)}
+label.first{margin-top:0}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;font-family:inherit;background:#fff;color:var(--text);transition:border-color .15s}
+input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,.1)}
 .form-row{display:grid;gap:10px}
 .form-row.cols2{grid-template-columns:1fr 1fr}
 .form-row.cols3{grid-template-columns:1fr 1fr 1fr}
 .form-row.cols4{grid-template-columns:1fr 1fr 1fr 1fr}
 
 /* BUTTONS */
-.btn{padding:8px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
+.btn{padding:8px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:#fff;color:var(--text);font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
 .btn:hover{background:var(--surface2)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
 .btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
 .btn.primary:hover{background:var(--blue-text)}
 .btn.danger{background:var(--red);color:#fff;border-color:var(--red);padding:4px 8px;font-size:12px}
 .btn.sm{padding:4px 8px;font-size:12px}
+.btn.full{width:100%;justify-content:center;padding:10px}
 .btn-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
 
 /* UPLOAD */
@@ -67,331 +85,369 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);bo
 .file-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--blue-bg);color:var(--blue-text);border-radius:6px;font-size:12px;margin-top:6px}
 
 /* BADGE */
-.badge{padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;white-space:nowrap}
+.badge{padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap}
 .badge.receita{background:var(--green-bg);color:var(--green-text)}
-.badge.deducao{background:var(--red-bg);color:var(--red-text)}
+.badge.deducao,.badge.despesa,.badge.fin_desp{background:var(--red-bg);color:var(--red-text)}
 .badge.custo{background:var(--amber-bg);color:var(--amber-text)}
-.badge.despesa{background:var(--red-bg);color:var(--red-text)}
-.badge.financeiro{background:var(--purple-bg);color:var(--purple-text)}
+.badge.fin_rec{background:var(--purple-bg);color:var(--purple-text)}
 .badge.fixa{background:var(--blue-bg);color:var(--blue-text)}
 .badge.variavel{background:var(--amber-bg);color:var(--amber-text)}
-.badge.proj{background:var(--surface2);color:var(--text3);font-style:italic}
+.badge.proj{background:var(--surface2);color:var(--text3)}
+.badge.admin-role{background:var(--blue-bg);color:var(--blue-text)}
+.badge.viewer-role{background:var(--surface2);color:var(--text2)}
 
 /* TABLE */
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-weight:500;font-size:11px;color:var(--text2);white-space:nowrap}
+th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-weight:600;font-size:11px;color:var(--text2);white-space:nowrap}
 td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surface2)}
 .num{font-variant-numeric:tabular-nums;text-align:right}
-.neg{color:var(--red)}
-.pos{color:var(--green)}
+.neg{color:var(--red)}.pos{color:var(--green)}
 
-/* DRE TABLE */
+/* DRE */
 .dre-wrap{overflow-x:auto}
-.dre-tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:700px}
-.dre-tbl th{padding:7px 10px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);font-weight:500;text-align:right;white-space:nowrap}
-.dre-tbl th:first-child{text-align:left;min-width:220px}
+.dre-tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}
+.dre-tbl th{padding:7px 10px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);font-weight:600;text-align:right}
+.dre-tbl th:first-child{text-align:left;min-width:240px}
 .dre-tbl td{padding:6px 10px;border-bottom:1px solid var(--border);text-align:right}
 .dre-tbl td:first-child{text-align:left}
-.dre-tbl tr.grp td{font-weight:600;background:var(--surface2);font-size:13px}
+.dre-tbl tr.grp td{font-weight:700;background:var(--surface2)}
 .dre-tbl tr.sub td{padding-left:28px;color:var(--text2);font-size:12px}
-.dre-tbl tr.subtotal td{font-weight:600;border-top:2px solid var(--border2)}
+.dre-tbl tr.subtotal td{font-weight:700;border-top:2px solid var(--border2);background:#fafbfc}
 .dre-tbl tr.grand td{font-weight:700;font-size:14px;background:var(--blue-bg);color:var(--blue-text)}
-.dre-tbl tr.spacer td{height:6px;background:var(--bg);border:none}
+.dre-tbl tr.spacer td{height:5px;background:var(--bg);border:none}
 .clickable{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
 .clickable:hover{color:var(--blue)}
 
 /* MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px}
 .overlay.open{display:flex}
-.modal{background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;width:600px;max-width:100%;max-height:88vh;overflow-y:auto}
+.modal{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;width:640px;max-width:100%;max-height:88vh;overflow-y:auto}
 .modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.modal-hd h2{font-size:15px;font-weight:600}
-.close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text2);line-height:1;padding:2px}
+.modal-hd h2{font-size:15px;font-weight:700}
+.close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text2);line-height:1}
 
 /* MISC */
 .empty{text-align:center;padding:36px 16px;color:var(--text3);font-size:13px}
 .divider{height:1px;background:var(--border);margin:16px 0}
-.tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.section-title{font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .info-box{background:var(--blue-bg);border-radius:var(--radius);padding:10px 14px;font-size:12px;color:var(--blue-text);margin-bottom:14px;display:flex;align-items:flex-start;gap:8px}
-.recurrence-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--text2)}
+.toast{position:fixed;bottom:24px;right:24px;background:#1a1d23;color:#fff;padding:12px 18px;border-radius:var(--radius);font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text2)}
+.loading-screen i{font-size:32px;color:var(--blue)}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-brand">
-    <i class="ti ti-chart-bar"></i>
-    DRE Gerencial
-  </div>
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('lancamentos')"><i class="ti ti-list"></i> Lançamentos</button>
-    <button class="tab" onclick="switchTab('despesas-fixas')"><i class="ti ti-repeat"></i> Despesas fixas/variáveis</button>
-    <button class="tab" onclick="switchTab('projecao')"><i class="ti ti-trending-up"></i> Projeção</button>
-    <button class="tab" onclick="switchTab('dre')"><i class="ti ti-file-analytics"></i> DRE</button>
+<!-- LOADING -->
+<div id="loading-screen" class="loading-screen">
+  <i class="ti ti-chart-bar"></i>
+  <span>Carregando...</span>
+</div>
+
+<!-- AUTH -->
+<div id="auth-screen" class="auth-screen" style="display:none">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <i class="ti ti-chart-bar"></i>
+      <h1>DRE Gerencial</h1>
+      <p>Faça login para continuar</p>
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+    <label class="first">E-mail</label>
+    <input id="login-email" type="email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <label>Senha</label>
+    <input id="login-password" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <div class="btn-row" style="margin-top:18px">
+      <button class="btn primary full" id="login-btn" onclick="doLogin()">
+        <i class="ti ti-login"></i> Entrar
+      </button>
+    </div>
   </div>
 </div>
 
-<div class="content">
+<!-- APP -->
+<div id="app-screen" style="display:none">
+  <div class="topbar">
+    <div class="topbar-brand"><i class="ti ti-chart-bar"></i> DRE Gerencial</div>
+    <div class="tabs" id="main-tabs">
+      <button class="tab active" onclick="switchTab('dre')" id="tab-dre"><i class="ti ti-file-analytics"></i> DRE</button>
+      <button class="tab" onclick="switchTab('lancamentos')" id="tab-lancamentos" style="display:none"><i class="ti ti-list"></i> Lançamentos</button>
+      <button class="tab" onclick="switchTab('recorrentes')" id="tab-recorrentes" style="display:none"><i class="ti ti-repeat"></i> Fixas/Variáveis</button>
+      <button class="tab" onclick="switchTab('projecao')" id="tab-projecao" style="display:none"><i class="ti ti-trending-up"></i> Projeção</button>
+      <button class="tab" onclick="switchTab('usuarios')" id="tab-usuarios" style="display:none"><i class="ti ti-users"></i> Usuários</button>
+    </div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <span id="user-name">-</span>
+        <span class="role-badge" id="role-badge">-</span>
+      </div>
+      <button class="btn sm" onclick="doLogout()"><i class="ti ti-logout"></i> Sair</button>
+    </div>
+  </div>
 
-<!-- LANÇAMENTOS -->
-<div id="panel-lancamentos" class="panel active">
-  <div class="grid2" style="margin-bottom:14px;align-items:start">
-    <div class="card">
-      <div class="card-title"><i class="ti ti-plus"></i> Novo lançamento avulso</div>
-      <div class="form-row cols2">
-        <div>
-          <label class="first">Tipo de conta</label>
-          <select id="l-tipo">
-            <option value="receita">Receita</option>
-            <option value="deducao">Dedução da receita</option>
-            <option value="custo">Custo operacional</option>
-            <option value="despesa_com">Despesa comercial</option>
-            <option value="despesa_adm">Despesa administrativa</option>
-            <option value="fin_rec">Receita financeira</option>
-            <option value="fin_desp">Despesa financeira</option>
-          </select>
-        </div>
-        <div>
-          <label class="first">Mês de competência</label>
-          <select id="l-mes" onchange="updateAno()">
+  <div class="content">
+
+    <!-- DRE -->
+    <div id="panel-dre" class="panel active">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div style="font-size:12px;color:var(--text2)" id="dre-click-hint"></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="dre-mes" onchange="renderDRE()" style="width:160px">
+            <option value="0">Ano completo</option>
             <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
             <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
             <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
             <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
           </select>
+          <input id="dre-ano" type="number" value="2026" min="2020" max="2040" onchange="renderDRE()" style="width:90px"/>
         </div>
       </div>
-      <label>Descrição</label>
-      <input id="l-desc" placeholder="Ex: Pagamento fornecedor ABC"/>
-      <div class="form-row cols2">
-        <div>
-          <label>Valor (R$)</label>
-          <input id="l-valor" type="number" placeholder="0,00" min="0" step="0.01"/>
-        </div>
-        <div>
-          <label>Ano</label>
-          <input id="l-ano" type="number" value="2026" min="2020" max="2040"/>
-        </div>
-      </div>
-      <label>Recibo / Comprovante</label>
-      <div class="upload-zone" onclick="document.getElementById('l-file').click()">
-        <i class="ti ti-upload" style="font-size:20px;display:block;margin-bottom:3px"></i>
-        Clique para anexar (PDF ou imagem)
-      </div>
-      <input id="l-file" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="showFile(this,'l-file-chip')"/>
-      <div id="l-file-chip"></div>
-      <div class="btn-row">
-        <button class="btn primary" onclick="addLancamento()"><i class="ti ti-check"></i> Adicionar</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="ti ti-chart-donut"></i> Resumo</div>
-      <div style="margin-bottom:10px">
-        <label class="first">Filtrar período</label>
-        <div class="form-row cols2">
-          <select id="filter-mes" onchange="renderTabela();updateSummary()">
-            <option value="0">Todos os meses</option>
-            <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
-            <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-            <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-            <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-          </select>
-          <input id="filter-ano" type="number" value="2026" min="2020" max="2040" onchange="renderTabela();updateSummary()"/>
-        </div>
-      </div>
-      <div class="grid2" style="gap:8px">
-        <div class="metric-card"><div class="metric-label">Receita bruta</div><div class="metric-value pos" id="sum-rec">R$ 0</div></div>
-        <div class="metric-card"><div class="metric-label">Custos + Despesas</div><div class="metric-value neg" id="sum-desp">R$ 0</div></div>
-        <div class="metric-card"><div class="metric-label">Lucro bruto</div><div class="metric-value" id="sum-lb">R$ 0</div></div>
-        <div class="metric-card"><div class="metric-label">Resultado líquido</div><div class="metric-value" id="sum-res">R$ 0</div></div>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title"><i class="ti ti-list-details"></i> Lançamentos avulsos</div>
-    <div class="table-wrap" id="tabela-lancamentos"><div class="empty">Nenhum lançamento. Adicione acima.</div></div>
-  </div>
-</div>
-
-<!-- DESPESAS FIXAS/VARIÁVEIS -->
-<div id="panel-despesas-fixas" class="panel">
-  <div class="info-box">
-    <i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0;margin-top:1px"></i>
-    <span>Cadastre despesas com recorrência automática. Elas serão geradas automaticamente para cada mês do período informado e entrarão no DRE.</span>
-  </div>
-  <div class="grid2" style="margin-bottom:14px;align-items:start">
-    <div class="card">
-      <div class="card-title"><i class="ti ti-plus"></i> Nova despesa recorrente</div>
-
-      <div class="form-row cols2">
-        <div>
-          <label class="first">Natureza</label>
-          <select id="df-natureza" onchange="toggleVariavel()">
-            <option value="fixa">Fixa (mesmo valor todo mês)</option>
-            <option value="variavel">Variável (valor muda por mês)</option>
-          </select>
-        </div>
-        <div>
-          <label class="first">Categoria DRE</label>
-          <select id="df-tipo">
-            <option value="custo">Custo operacional</option>
-            <option value="despesa_adm">Despesa administrativa</option>
-            <option value="despesa_com">Despesa comercial</option>
-            <option value="deducao">Dedução da receita</option>
-            <option value="fin_desp">Despesa financeira</option>
-          </select>
-        </div>
-      </div>
-
-      <label>Nome / Descrição</label>
-      <input id="df-desc" placeholder="Ex: Aluguel, Energia elétrica, Folha de pagamento"/>
-
-      <div id="df-valor-fixo">
-        <label>Valor mensal (R$)</label>
-        <input id="df-valor" type="number" placeholder="0,00" min="0" step="0.01"/>
-      </div>
-
-      <div class="form-row cols2">
-        <div>
-          <label>Ano de início</label>
-          <input id="df-ano-ini" type="number" value="2026" min="2020" max="2040"/>
-        </div>
-        <div>
-          <label>Ano de fim</label>
-          <input id="df-ano-fim" type="number" value="2026" min="2020" max="2040"/>
-        </div>
-      </div>
-
-      <div class="form-row cols2">
-        <div>
-          <label>Mês inicial</label>
-          <select id="df-mes-ini">
-            <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
-            <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-            <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-            <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-          </select>
-        </div>
-        <div>
-          <label>Mês final</label>
-          <select id="df-mes-fim">
-            <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
-            <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-            <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-            <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="df-variaveis-area" style="display:none">
-        <div class="divider"></div>
-        <div class="card-title" style="margin-bottom:8px"><i class="ti ti-calendar"></i> Valores por mês</div>
-        <div id="df-variaveis-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px"></div>
-      </div>
-
-      <label>Comprovante / Contrato (opcional)</label>
-      <div class="upload-zone" onclick="document.getElementById('df-file').click()">
-        <i class="ti ti-paperclip" style="font-size:18px;display:block;margin-bottom:3px"></i>
-        Anexar contrato ou comprovante
-      </div>
-      <input id="df-file" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="showFile(this,'df-file-chip')"/>
-      <div id="df-file-chip"></div>
-
-      <div class="btn-row">
-        <button class="btn primary" onclick="addDespesaFixa()"><i class="ti ti-check"></i> Adicionar despesa</button>
+      <div class="card">
+        <div class="dre-wrap" id="dre-content"><div class="empty">Carregando dados...</div></div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title"><i class="ti ti-list-check"></i> Despesas recorrentes cadastradas</div>
-      <div id="tabela-despesas-fixas"><div class="empty">Nenhuma despesa recorrente ainda.</div></div>
+    <!-- LANÇAMENTOS -->
+    <div id="panel-lancamentos" class="panel">
+      <div class="grid2" style="margin-bottom:14px;align-items:start">
+        <div class="card">
+          <div class="card-title"><i class="ti ti-plus"></i> Novo lançamento avulso</div>
+          <div class="form-row cols2">
+            <div>
+              <label class="first">Tipo de conta</label>
+              <select id="l-tipo">
+                <option value="receita">Receita</option>
+                <option value="deducao">Dedução da receita</option>
+                <option value="custo">Custo operacional</option>
+                <option value="despesa_com">Despesa comercial</option>
+                <option value="despesa_adm">Despesa administrativa</option>
+                <option value="fin_rec">Receita financeira</option>
+                <option value="fin_desp">Despesa financeira</option>
+              </select>
+            </div>
+            <div>
+              <label class="first">Mês</label>
+              <select id="l-mes">
+                <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+                <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+                <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+                <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+              </select>
+            </div>
+          </div>
+          <label>Descrição</label>
+          <input id="l-desc" placeholder="Ex: Pagamento fornecedor ABC"/>
+          <div class="form-row cols2">
+            <div><label>Valor (R$)</label><input id="l-valor" type="number" placeholder="0,00" min="0" step="0.01"/></div>
+            <div><label>Ano</label><input id="l-ano" type="number" value="2026" min="2020" max="2040"/></div>
+          </div>
+          <label>Recibo / Comprovante</label>
+          <div class="upload-zone" onclick="document.getElementById('l-file').click()">
+            <i class="ti ti-upload" style="font-size:20px;display:block;margin-bottom:3px"></i>
+            Clique para anexar (PDF ou imagem)
+          </div>
+          <input id="l-file" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="showFileChip(this,'l-file-chip')"/>
+          <div id="l-file-chip"></div>
+          <div class="btn-row">
+            <button class="btn primary" id="btn-add-lanc" onclick="addLancamento()"><i class="ti ti-check"></i> Adicionar</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-chart-donut"></i> Resumo</div>
+          <div style="margin-bottom:12px">
+            <div class="form-row cols2">
+              <div>
+                <label class="first">Mês</label>
+                <select id="filter-mes" onchange="renderTabela()">
+                  <option value="0">Todos</option>
+                  <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+                  <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+                  <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+                  <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+                </select>
+              </div>
+              <div>
+                <label class="first">Ano</label>
+                <input id="filter-ano" type="number" value="2026" min="2020" max="2040" onchange="renderTabela()"/>
+              </div>
+            </div>
+          </div>
+          <div class="grid2" style="gap:8px">
+            <div class="metric-card"><div class="metric-label">Receita bruta</div><div class="metric-value pos" id="sum-rec">R$ 0</div></div>
+            <div class="metric-card"><div class="metric-label">Custos + Despesas</div><div class="metric-value neg" id="sum-desp">R$ 0</div></div>
+            <div class="metric-card"><div class="metric-label">Lucro bruto</div><div class="metric-value" id="sum-lb">R$ 0</div></div>
+            <div class="metric-card"><div class="metric-label">Resultado líquido</div><div class="metric-value" id="sum-res">R$ 0</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-list-details"></i> Lançamentos avulsos</div>
+        <div class="table-wrap" id="tabela-lancamentos"><div class="empty">Nenhum lançamento.</div></div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- PROJEÇÃO -->
-<div id="panel-projecao" class="panel">
-  <div class="card" style="margin-bottom:14px">
-    <div class="card-title"><i class="ti ti-trending-up"></i> Projeção de receitas futuras</div>
-    <div class="form-row cols4" style="align-items:end">
-      <div>
-        <label class="first">Descrição</label>
-        <input id="p-desc" placeholder="Ex: Contrato cliente X"/>
+    <!-- RECORRENTES -->
+    <div id="panel-recorrentes" class="panel">
+      <div class="info-box"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i>
+        Despesas com recorrência automática. Cada parcela entra automaticamente no DRE no mês correspondente.
       </div>
-      <div>
-        <label class="first">Tipo</label>
-        <select id="p-tipo">
-          <option value="receita">Receita</option>
-          <option value="deducao">Dedução</option>
-          <option value="custo">Custo</option>
-          <option value="despesa_adm">Despesa adm.</option>
-          <option value="despesa_com">Despesa com.</option>
-        </select>
-      </div>
-      <div>
-        <label class="first">Valor/mês (R$)</label>
-        <input id="p-valor" type="number" placeholder="0,00" min="0" step="0.01"/>
-      </div>
-      <div>
-        <label class="first">Ano</label>
-        <input id="p-ano" type="number" value="2026" min="2020" max="2040"/>
+      <div class="grid2" style="margin-bottom:14px;align-items:start">
+        <div class="card">
+          <div class="card-title"><i class="ti ti-plus"></i> Nova despesa recorrente</div>
+          <div class="form-row cols2">
+            <div>
+              <label class="first">Natureza</label>
+              <select id="df-natureza" onchange="toggleVariavel()">
+                <option value="fixa">Fixa (mesmo valor)</option>
+                <option value="variavel">Variável (por mês)</option>
+              </select>
+            </div>
+            <div>
+              <label class="first">Categoria DRE</label>
+              <select id="df-tipo">
+                <option value="custo">Custo operacional</option>
+                <option value="despesa_adm">Despesa administrativa</option>
+                <option value="despesa_com">Despesa comercial</option>
+                <option value="deducao">Dedução da receita</option>
+                <option value="fin_desp">Despesa financeira</option>
+              </select>
+            </div>
+          </div>
+          <label>Descrição</label>
+          <input id="df-desc" placeholder="Ex: Aluguel, Energia, Folha"/>
+          <div id="df-valor-fixo">
+            <label>Valor mensal (R$)</label>
+            <input id="df-valor" type="number" placeholder="0,00" min="0" step="0.01"/>
+          </div>
+          <div class="form-row cols2">
+            <div><label>Ano início</label><input id="df-ano-ini" type="number" value="2026" min="2020" max="2040"/></div>
+            <div><label>Ano fim</label><input id="df-ano-fim" type="number" value="2026" min="2020" max="2040"/></div>
+          </div>
+          <div class="form-row cols2">
+            <div>
+              <label>Mês inicial</label>
+              <select id="df-mes-ini">
+                <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+                <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+                <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+                <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+              </select>
+            </div>
+            <div>
+              <label>Mês final</label>
+              <select id="df-mes-fim">
+                <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+                <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+                <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+                <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+              </select>
+            </div>
+          </div>
+          <div id="df-variaveis-area" style="display:none">
+            <div class="divider"></div>
+            <div class="card-title" style="margin-bottom:8px"><i class="ti ti-calendar"></i> Valores por mês</div>
+            <div id="df-variaveis-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+          </div>
+          <label>Comprovante / Contrato</label>
+          <div class="upload-zone" onclick="document.getElementById('df-file').click()">
+            <i class="ti ti-paperclip" style="font-size:18px;display:block;margin-bottom:3px"></i>
+            Anexar contrato ou comprovante
+          </div>
+          <input id="df-file" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="showFileChip(this,'df-file-chip')"/>
+          <div id="df-file-chip"></div>
+          <div class="btn-row">
+            <button class="btn primary" id="btn-add-df" onclick="addDespesaFixa()"><i class="ti ti-check"></i> Adicionar</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-list-check"></i> Despesas recorrentes</div>
+          <div id="tabela-recorrentes"><div class="empty">Nenhuma despesa recorrente.</div></div>
+        </div>
       </div>
     </div>
-    <div class="form-row cols2" style="margin-top:10px">
-      <div>
-        <label>Mês inicial</label>
-        <select id="p-mes-ini">
-          <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
-          <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-          <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-          <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-        </select>
-      </div>
-      <div>
-        <label>Mês final</label>
-        <select id="p-mes-fim">
-          <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
-          <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-          <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-          <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-        </select>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn primary" onclick="addProjecao()"><i class="ti ti-check"></i> Adicionar projeção</button>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">Projeções cadastradas</div>
-    <div id="tabela-projecoes"><div class="empty">Nenhuma projeção.</div></div>
-  </div>
-</div>
 
-<!-- DRE -->
-<div id="panel-dre" class="panel">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-    <div style="font-size:12px;color:var(--text2)"><i class="ti ti-info-circle"></i> Clique em qualquer valor sublinhado para ver o detalhamento</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <select id="dre-mes" onchange="renderDRE()" style="width:160px">
-        <option value="0">Ano completo</option>
-        <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
-        <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-        <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-        <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-      </select>
-      <input id="dre-ano" type="number" value="2026" min="2020" max="2040" onchange="renderDRE()" style="width:90px"/>
+    <!-- PROJEÇÃO -->
+    <div id="panel-projecao" class="panel">
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title"><i class="ti ti-trending-up"></i> Projeção de receitas futuras</div>
+        <div class="form-row cols4" style="align-items:end">
+          <div><label class="first">Descrição</label><input id="p-desc" placeholder="Ex: Contrato cliente X"/></div>
+          <div><label class="first">Tipo</label>
+            <select id="p-tipo">
+              <option value="receita">Receita</option><option value="deducao">Dedução</option>
+              <option value="custo">Custo</option><option value="despesa_adm">Despesa adm.</option>
+              <option value="despesa_com">Despesa com.</option>
+            </select>
+          </div>
+          <div><label class="first">Valor/mês (R$)</label><input id="p-valor" type="number" placeholder="0,00" min="0" step="0.01"/></div>
+          <div><label class="first">Ano</label><input id="p-ano" type="number" value="2026" min="2020" max="2040"/></div>
+        </div>
+        <div class="form-row cols2" style="margin-top:10px">
+          <div><label>Mês inicial</label>
+            <select id="p-mes-ini">
+              <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+              <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+              <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+              <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+            </select>
+          </div>
+          <div><label>Mês final</label>
+            <select id="p-mes-fim">
+              <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+              <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+              <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+              <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-add-proj" onclick="addProjecao()"><i class="ti ti-check"></i> Adicionar projeção</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Projeções cadastradas</div>
+        <div id="tabela-projecoes"><div class="empty">Nenhuma projeção.</div></div>
+      </div>
     </div>
-  </div>
-  <div class="card">
-    <div class="dre-wrap" id="dre-content"></div>
-  </div>
-</div>
 
-</div><!-- /content -->
+    <!-- USUÁRIOS -->
+    <div id="panel-usuarios" class="panel">
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title"><i class="ti ti-user-plus"></i> Convidar novo usuário</div>
+        <div class="info-box"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i>
+          O usuário receberá um e-mail de convite. Após confirmar, poderá acessar o sistema com a senha que definir.
+        </div>
+        <div class="form-row cols3">
+          <div><label class="first">Nome</label><input id="u-nome" placeholder="Nome completo"/></div>
+          <div><label class="first">E-mail</label><input id="u-email" type="email" placeholder="email@empresa.com"/></div>
+          <div><label class="first">Perfil</label>
+            <select id="u-role">
+              <option value="viewer">Visualizador (só DRE)</option>
+              <option value="admin">Administrador (acesso total)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row cols2" style="margin-top:10px">
+          <div><label>Senha temporária</label><input id="u-senha" type="password" placeholder="Mínimo 6 caracteres"/></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-add-user" onclick="addUsuario()"><i class="ti ti-user-plus"></i> Criar usuário</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-users"></i> Usuários do sistema</div>
+        <div id="tabela-usuarios"><div class="empty">Carregando...</div></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
 
 <!-- MODAL DETALHAMENTO -->
 <div class="overlay" id="modal-overlay" onclick="closeModal(event)">
@@ -406,7 +462,7 @@ tr:hover td{background:var(--surface2)}
 
 <!-- MODAL RECIBO -->
 <div class="overlay" id="recibo-overlay" onclick="closeRecibo(event)">
-  <div class="modal" style="width:480px">
+  <div class="modal" style="width:500px">
     <div class="modal-hd">
       <h2 id="recibo-title">Comprovante</h2>
       <button class="close-btn" onclick="closeRecibo(null,true)">×</button>
@@ -415,375 +471,539 @@ tr:hover td{background:var(--surface2)}
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
+// ── CONFIG SUPABASE ──────────────────────────────────────────────
+const SUPABASE_URL = 'https://kkjtadyyofcmmqaothki.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranRhZHl5b2ZjbW1xYW90aGtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0OTU4OTIsImV4cCI6MjA5ODA3MTg5Mn0.ioSHC03vE8kdjpTdR_tSXuGI0fX-hM8OCcm0t8P71zA';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const MESES=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const TIPOS_LABEL={receita:'Receita',deducao:'Dedução',custo:'Custo operacional',despesa_com:'Desp. comercial',despesa_adm:'Desp. administrativa',fin_rec:'Receita financeira',fin_desp:'Despesa financeira'};
-const TIPOS_BADGE={receita:'receita',deducao:'deducao',custo:'custo',despesa_com:'despesa',despesa_adm:'despesa',fin_rec:'financeiro',fin_desp:'financeiro'};
 
-let lancamentos=[];
-let despesasFixas=[];
-let projecoes=[];
-let allFiles={};
-let idSeq=1;
-let currentFileL=null;
-let currentFileDf=null;
+let currentUser = null;
+let currentRole = null;
+let currentFileL = null;
+let currentFileDf = null;
 
-function switchTab(t){
-  document.querySelectorAll('.tab').forEach((b,i)=>{
-    b.classList.toggle('active',['lancamentos','despesas-fixas','projecao','dre'][i]===t);
-  });
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-'+t).classList.add('active');
-  if(t==='dre')renderDRE();
-}
-
-function updateAno(){}
-
-function showFile(input,chipId){
-  const f=input.files[0]||null;
-  if(chipId==='l-file-chip')currentFileL=f;
-  else currentFileDf=f;
-  document.getElementById(chipId).innerHTML=f?`<div class="file-chip"><i class="ti ti-paperclip"></i>${f.name}</div>`:'';
-}
-
-function fmt(v){return'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fmtN(v){return(v<0?'-':'')+fmt(v);}
-
-// ── LANÇAMENTOS ────────────────────────────────────────────────
-function addLancamento(){
-  const tipo=document.getElementById('l-tipo').value;
-  const desc=document.getElementById('l-desc').value.trim();
-  const valor=parseFloat(document.getElementById('l-valor').value)||0;
-  const mes=parseInt(document.getElementById('l-mes').value);
-  const ano=parseInt(document.getElementById('l-ano').value)||2026;
-  if(!desc)return alert('Informe a descrição.');
-  if(!valor)return alert('Informe o valor.');
-  const saveIt=(fd,fn)=>{
-    const id=idSeq++;
-    if(fd)allFiles[id]={data:fd,name:fn};
-    lancamentos.push({id,tipo,desc,valor,mes,ano,hasFile:!!fd,fileName:fn,isProjecao:false,source:'avulso'});
-    document.getElementById('l-desc').value='';
-    document.getElementById('l-valor').value='';
-    document.getElementById('l-file-chip').innerHTML='';
-    currentFileL=null;
-    document.getElementById('l-file').value='';
-    renderTabela();updateSummary();
-  };
-  if(currentFileL){const r=new FileReader();r.onload=e=>saveIt(e.target.result,currentFileL.name);r.readAsDataURL(currentFileL);}
-  else saveIt(null,null);
-}
-
-function remLancamento(id){lancamentos=lancamentos.filter(l=>l.id!==id);renderTabela();updateSummary();}
-
-function renderTabela(){
-  const fm=parseInt(document.getElementById('filter-mes').value);
-  const fa=parseInt(document.getElementById('filter-ano').value)||2026;
-  const data=lancamentos.filter(l=>(fm===0||l.mes===fm)&&l.ano===fa);
-  const el=document.getElementById('tabela-lancamentos');
-  if(!data.length){el.innerHTML='<div class="empty">Nenhum lançamento para este período.</div>';return;}
-  el.innerHTML=`<table><thead><tr><th>Mês/Ano</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor</th><th>Recibo</th><th></th></tr></thead><tbody>`+
-    data.map(l=>`<tr>
-      <td>${MESES[l.mes]}/${l.ano}</td>
-      <td><span class="badge ${TIPOS_BADGE[l.tipo]}">${TIPOS_LABEL[l.tipo]}</span></td>
-      <td>${l.desc}</td>
-      <td class="num">${fmt(l.valor)}</td>
-      <td>${l.hasFile?`<button class="btn sm" onclick="verRecibo(${l.id})"><i class="ti ti-paperclip"></i></button>`:'—'}</td>
-      <td><button class="btn danger" onclick="remLancamento(${l.id})"><i class="ti ti-trash"></i></button></td>
-    </tr>`).join('')+'</tbody></table>';
-  updateSummary();
-}
-
-function updateSummary(){
-  const fm=parseInt(document.getElementById('filter-mes').value);
-  const fa=parseInt(document.getElementById('filter-ano').value)||2026;
-  const items=allItems(fm,fa);
-  const rec=sum(items,'receita');
-  const ded=sum(items,'deducao');
-  const cus=sum(items,'custo');
-  const da=sum(items,'despesa_adm')+sum(items,'despesa_com');
-  const fd=sum(items,'fin_desp');
-  const lb=rec-ded-cus;
-  const res=lb-da-fd+sum(items,'fin_rec');
-  document.getElementById('sum-rec').textContent=fmt(rec);
-  document.getElementById('sum-desp').textContent=fmt(cus+da+fd);
-  setMetric('sum-lb',lb);setMetric('sum-res',res);
-}
-function setMetric(id,v){
-  const el=document.getElementById(id);
-  el.textContent=fmtN(v);
-  el.className='metric-value '+(v>=0?'pos':'neg');
-}
-
-// ── DESPESAS FIXAS/VARIÁVEIS ────────────────────────────────────
-function toggleVariavel(){
-  const isVar=document.getElementById('df-natureza').value==='variavel';
-  document.getElementById('df-valor-fixo').style.display=isVar?'none':'block';
-  if(isVar)buildVariavelGrid();
-  else document.getElementById('df-variaveis-area').style.display='none';
-}
-
-function buildVariavelGrid(){
-  const ini=parseInt(document.getElementById('df-mes-ini').value);
-  const fim=parseInt(document.getElementById('df-mes-fim').value);
-  const anoIni=parseInt(document.getElementById('df-ano-ini').value)||2026;
-  const anoFim=parseInt(document.getElementById('df-ano-fim').value)||2026;
-  if(fim<ini&&anoFim===anoIni){alert('Mês final deve ser após o mês inicial.');return;}
-  const grid=document.getElementById('df-variaveis-grid');
-  grid.innerHTML='';
-  let m=ini,a=anoIni;
-  const cells=[];
-  while(a<anoFim||(a===anoFim&&m<=fim)){
-    cells.push({m,a});
-    m++;if(m>12){m=1;a++;}
-    if(cells.length>60)break;
+// ── INIT ─────────────────────────────────────────────────────────
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await loadUserRole(session.user);
+    showApp();
+  } else {
+    showAuth();
   }
-  cells.forEach(({m,a})=>{
-    grid.innerHTML+=`<div style="display:flex;align-items:center;gap:8px">
-      <label style="margin:0;min-width:90px;color:var(--text2)">${MESES[m]}/${a}</label>
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      await loadUserRole(session.user);
+      showApp();
+    } else if (event === 'SIGNED_OUT') {
+      showAuth();
+    }
+  });
+}
+
+async function loadUserRole(user) {
+  currentUser = user;
+  const { data } = await sb.from('user_profiles').select('role,name').eq('id', user.id).single();
+  currentRole = data?.role || 'viewer';
+  const name = data?.name || user.email.split('@')[0];
+  document.getElementById('user-name').textContent = name;
+  document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+  const rb = document.getElementById('role-badge');
+  rb.textContent = currentRole === 'admin' ? 'Administrador' : 'Visualizador';
+  rb.className = 'role-badge ' + (currentRole === 'admin' ? 'admin' : 'viewer');
+  // Show tabs based on role
+  if (currentRole === 'admin') {
+    ['tab-lancamentos','tab-recorrentes','tab-projecao','tab-usuarios'].forEach(id => {
+      document.getElementById(id).style.display = '';
+    });
+    document.getElementById('dre-click-hint').innerHTML = '<i class="ti ti-info-circle"></i> Clique em qualquer valor sublinhado para ver o detalhamento';
+  }
+}
+
+function showAuth() {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+}
+function showApp() {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  loadAll();
+}
+
+// ── AUTH ─────────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pwd = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('auth-error');
+  err.style.display = 'none';
+  btn.innerHTML = '<span class="spinner"></span> Entrando...';
+  btn.disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email, password: pwd });
+  if (error) {
+    err.textContent = 'E-mail ou senha incorretos.';
+    err.style.display = 'block';
+    btn.innerHTML = '<i class="ti ti-login"></i> Entrar';
+    btn.disabled = false;
+  }
+}
+async function doLogout() {
+  await sb.auth.signOut();
+}
+
+// ── NAV ──────────────────────────────────────────────────────────
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + t).classList.add('active');
+  if (t === 'dre') renderDRE();
+  if (t === 'lancamentos') renderTabela();
+  if (t === 'recorrentes') renderRecorrentes();
+  if (t === 'projecao') renderProjecoes();
+  if (t === 'usuarios') renderUsuarios();
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────
+function fmt(v) { return 'R$ ' + Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmtN(v) { return (v < 0 ? '-' : '') + fmt(v); }
+function toast(msg, dur=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+function showFileChip(input, chipId) {
+  const f = input.files[0] || null;
+  if (chipId === 'l-file-chip') currentFileL = f;
+  else currentFileDf = f;
+  document.getElementById(chipId).innerHTML = f ? `<div class="file-chip"><i class="ti ti-paperclip"></i>${f.name}</div>` : '';
+}
+
+async function uploadFile(file, folder) {
+  if (!file) return null;
+  const ext = file.name.split('.').pop();
+  const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  const { error } = await sb.storage.from('comprovantes').upload(path, file);
+  if (error) { toast('Erro ao enviar arquivo.'); return null; }
+  return path;
+}
+async function getFileUrl(path) {
+  if (!path) return null;
+  const { data } = await sb.storage.from('comprovantes').createSignedUrl(path, 3600);
+  return data?.signedUrl || null;
+}
+
+// ── LOAD ALL ─────────────────────────────────────────────────────
+async function loadAll() {
+  await renderDRE();
+}
+
+// ── LANÇAMENTOS ──────────────────────────────────────────────────
+async function addLancamento() {
+  const tipo = document.getElementById('l-tipo').value;
+  const desc = document.getElementById('l-desc').value.trim();
+  const valor = parseFloat(document.getElementById('l-valor').value) || 0;
+  const mes = parseInt(document.getElementById('l-mes').value);
+  const ano = parseInt(document.getElementById('l-ano').value) || 2026;
+  if (!desc) return alert('Informe a descrição.');
+  if (!valor) return alert('Informe o valor.');
+  const btn = document.getElementById('btn-add-lanc');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner" style="border-top-color:var(--blue)"></span> Salvando...';
+  const filePath = await uploadFile(currentFileL, 'lancamentos');
+  const { error } = await sb.from('lancamentos').insert({ tipo, descricao: desc, valor, mes, ano, file_path: filePath, user_id: currentUser.id });
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Adicionar';
+  if (error) return toast('Erro ao salvar: ' + error.message);
+  document.getElementById('l-desc').value = '';
+  document.getElementById('l-valor').value = '';
+  document.getElementById('l-file-chip').innerHTML = '';
+  document.getElementById('l-file').value = '';
+  currentFileL = null;
+  toast('Lançamento salvo!');
+  renderTabela();
+}
+
+async function renderTabela() {
+  const fm = parseInt(document.getElementById('filter-mes').value);
+  const fa = parseInt(document.getElementById('filter-ano').value) || 2026;
+  let q = sb.from('lancamentos').select('*').eq('ano', fa).order('mes');
+  if (fm > 0) q = q.eq('mes', fm);
+  const { data, error } = await q;
+  const el = document.getElementById('tabela-lancamentos');
+  if (error || !data?.length) { el.innerHTML = '<div class="empty">Nenhum lançamento para este período.</div>'; updateSummary([]); return; }
+  el.innerHTML = `<table><thead><tr><th>Mês/Ano</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor</th><th>Recibo</th><th></th></tr></thead><tbody>` +
+    data.map(l => `<tr>
+      <td>${MESES[l.mes]}/${l.ano}</td>
+      <td><span class="badge ${l.tipo}">${TIPOS_LABEL[l.tipo]}</span></td>
+      <td>${l.descricao}</td>
+      <td class="num">${fmt(l.valor)}</td>
+      <td>${l.file_path ? `<button class="btn sm" onclick="verComprovante('${l.file_path}','${l.descricao}')"><i class="ti ti-paperclip"></i></button>` : '—'}</td>
+      <td><button class="btn danger" onclick="remLancamento('${l.id}')"><i class="ti ti-trash"></i></button></td>
+    </tr>`).join('') + '</tbody></table>';
+  updateSummary(data);
+}
+
+async function remLancamento(id) {
+  if (!confirm('Remover este lançamento?')) return;
+  await sb.from('lancamentos').delete().eq('id', id);
+  toast('Removido.'); renderTabela();
+}
+
+function updateSummary(data) {
+  const sum = (tipo) => data.filter(i => i.tipo === tipo).reduce((a, b) => a + b.valor, 0);
+  const rec = sum('receita'); const ded = sum('deducao'); const cus = sum('custo');
+  const da = sum('despesa_adm') + sum('despesa_com'); const fd = sum('fin_desp');
+  const lb = rec - ded - cus; const res = lb - da - fd + sum('fin_rec');
+  document.getElementById('sum-rec').textContent = fmt(rec);
+  document.getElementById('sum-desp').textContent = fmt(cus + da + fd);
+  setMetric('sum-lb', lb); setMetric('sum-res', res);
+}
+function setMetric(id, v) {
+  const el = document.getElementById(id);
+  el.textContent = fmtN(v);
+  el.className = 'metric-value ' + (v >= 0 ? 'pos' : 'neg');
+}
+
+// ── RECORRENTES ──────────────────────────────────────────────────
+function toggleVariavel() {
+  const isVar = document.getElementById('df-natureza').value === 'variavel';
+  document.getElementById('df-valor-fixo').style.display = isVar ? 'none' : 'block';
+  if (isVar) buildVariavelGrid();
+  else document.getElementById('df-variaveis-area').style.display = 'none';
+}
+
+function buildVariavelGrid() {
+  const ini = parseInt(document.getElementById('df-mes-ini').value);
+  const fim = parseInt(document.getElementById('df-mes-fim').value);
+  const anoIni = parseInt(document.getElementById('df-ano-ini').value) || 2026;
+  const anoFim = parseInt(document.getElementById('df-ano-fim').value) || 2026;
+  const grid = document.getElementById('df-variaveis-grid');
+  grid.innerHTML = '';
+  let m = ini, a = anoIni, count = 0;
+  while ((a < anoFim || (a === anoFim && m <= fim)) && count < 60) {
+    grid.innerHTML += `<div style="display:flex;align-items:center;gap:8px">
+      <label style="margin:0;min-width:95px;color:var(--text2);font-size:12px">${MESES[m].substring(0,3)}/${a}</label>
       <input type="number" id="var-${a}-${m}" placeholder="0,00" min="0" step="0.01" style="margin:0"/>
     </div>`;
-  });
-  document.getElementById('df-variaveis-area').style.display='block';
+    m++; if (m > 12) { m = 1; a++; } count++;
+  }
+  document.getElementById('df-variaveis-area').style.display = 'block';
 }
 
-document.addEventListener('change',function(e){
-  const ids=['df-mes-ini','df-mes-fim','df-ano-ini','df-ano-fim'];
-  if(ids.includes(e.target.id)&&document.getElementById('df-natureza').value==='variavel')buildVariavelGrid();
+['df-mes-ini','df-mes-fim','df-ano-ini','df-ano-fim'].forEach(id => {
+  document.addEventListener('change', e => {
+    if (e.target.id === id && document.getElementById('df-natureza').value === 'variavel') buildVariavelGrid();
+  });
 });
 
-function addDespesaFixa(){
-  const natureza=document.getElementById('df-natureza').value;
-  const tipo=document.getElementById('df-tipo').value;
-  const desc=document.getElementById('df-desc').value.trim();
-  const mesIni=parseInt(document.getElementById('df-mes-ini').value);
-  const mesFim=parseInt(document.getElementById('df-mes-fim').value);
-  const anoIni=parseInt(document.getElementById('df-ano-ini').value)||2026;
-  const anoFim=parseInt(document.getElementById('df-ano-fim').value)||2026;
-  if(!desc)return alert('Informe a descrição.');
-
-  let valoresPorMes={};
-  if(natureza==='fixa'){
-    const v=parseFloat(document.getElementById('df-valor').value)||0;
-    if(!v)return alert('Informe o valor mensal.');
-    let m=mesIni,a=anoIni;
-    while(a<anoFim||(a===anoFim&&m<=mesFim)){
-      valoresPorMes[`${a}-${m}`]=v;
-      m++;if(m>12){m=1;a++;}
-      if(Object.keys(valoresPorMes).length>120)break;
+async function addDespesaFixa() {
+  const natureza = document.getElementById('df-natureza').value;
+  const tipo = document.getElementById('df-tipo').value;
+  const desc = document.getElementById('df-desc').value.trim();
+  const mesIni = parseInt(document.getElementById('df-mes-ini').value);
+  const mesFim = parseInt(document.getElementById('df-mes-fim').value);
+  const anoIni = parseInt(document.getElementById('df-ano-ini').value) || 2026;
+  const anoFim = parseInt(document.getElementById('df-ano-fim').value) || 2026;
+  if (!desc) return alert('Informe a descrição.');
+  let valoresPorMes = {};
+  if (natureza === 'fixa') {
+    const v = parseFloat(document.getElementById('df-valor').value) || 0;
+    if (!v) return alert('Informe o valor mensal.');
+    let m = mesIni, a = anoIni, c = 0;
+    while ((a < anoFim || (a === anoFim && m <= mesFim)) && c < 120) {
+      valoresPorMes[`${a}-${m}`] = v; m++; if (m > 12) { m = 1; a++; } c++;
     }
-  }else{
-    let m=mesIni,a=anoIni;
-    while(a<anoFim||(a===anoFim&&m<=mesFim)){
-      const v=parseFloat(document.getElementById(`var-${a}-${m}`)?.value)||0;
-      valoresPorMes[`${a}-${m}`]=v;
-      m++;if(m>12){m=1;a++;}
-      if(Object.keys(valoresPorMes).length>120)break;
+  } else {
+    let m = mesIni, a = anoIni, c = 0;
+    while ((a < anoFim || (a === anoFim && m <= mesFim)) && c < 120) {
+      const v = parseFloat(document.getElementById(`var-${a}-${m}`)?.value) || 0;
+      valoresPorMes[`${a}-${m}`] = v; m++; if (m > 12) { m = 1; a++; } c++;
     }
-    if(Object.values(valoresPorMes).every(v=>v===0))return alert('Informe ao menos um valor.');
+    if (Object.values(valoresPorMes).every(v => v === 0)) return alert('Informe ao menos um valor.');
   }
-
-  const saveIt=(fd,fn)=>{
-    const id=idSeq++;
-    if(fd)allFiles[id]={data:fd,name:fn};
-    const total=Object.values(valoresPorMes).reduce((a,b)=>a+b,0);
-    const parcelas=Object.keys(valoresPorMes).length;
-    despesasFixas.push({id,natureza,tipo,desc,mesIni,mesFim,anoIni,anoFim,valoresPorMes,total,parcelas,hasFile:!!fd,fileName:fn});
-    document.getElementById('df-desc').value='';
-    document.getElementById('df-valor').value='';
-    document.getElementById('df-file-chip').innerHTML='';
-    document.getElementById('df-variaveis-area').style.display='none';
-    document.getElementById('df-natureza').value='fixa';
-    document.getElementById('df-valor-fixo').style.display='block';
-    currentFileDf=null;
-    document.getElementById('df-file').value='';
-    renderDespesasFixas();
-  };
-  if(currentFileDf){const r=new FileReader();r.onload=e=>saveIt(e.target.result,currentFileDf.name);r.readAsDataURL(currentFileDf);}
-  else saveIt(null,null);
-}
-
-function remDespesaFixa(id){despesasFixas=despesasFixas.filter(d=>d.id!==id);renderDespesasFixas();}
-
-function renderDespesasFixas(){
-  const el=document.getElementById('tabela-despesas-fixas');
-  if(!despesasFixas.length){el.innerHTML='<div class="empty">Nenhuma despesa recorrente ainda.</div>';return;}
-  el.innerHTML=`<table style="font-size:12px"><thead><tr>
-    <th>Natureza</th><th>Categoria</th><th>Descrição</th><th>Período</th><th style="text-align:right">Total</th><th>Doc</th><th></th>
-  </tr></thead><tbody>`+
-  despesasFixas.map(d=>`<tr>
-    <td><span class="badge ${d.natureza}">${d.natureza==='fixa'?'Fixa':'Variável'}</span></td>
-    <td><span class="badge ${TIPOS_BADGE[d.tipo]}">${TIPOS_LABEL[d.tipo]}</span></td>
-    <td>${d.desc}<br><span style="color:var(--text3);font-size:11px">${d.parcelas} parcela${d.parcelas>1?'s':''}</span></td>
-    <td style="white-space:nowrap">${MESES[d.mesIni].substring(0,3)}/${d.anoIni} → ${MESES[d.mesFim].substring(0,3)}/${d.anoFim}</td>
-    <td class="num">${fmt(d.total)}</td>
-    <td>${d.hasFile?`<button class="btn sm" onclick="verRecibo(${d.id})"><i class="ti ti-paperclip"></i></button>`:'—'}</td>
-    <td><button class="btn danger" onclick="remDespesaFixa(${d.id})"><i class="ti ti-trash"></i></button></td>
-  </tr>`).join('')+'</tbody></table>';
-}
-
-// ── PROJEÇÕES ────────────────────────────────────────────────
-function addProjecao(){
-  const desc=document.getElementById('p-desc').value.trim();
-  const tipo=document.getElementById('p-tipo').value;
-  const valor=parseFloat(document.getElementById('p-valor').value)||0;
-  const mesIni=parseInt(document.getElementById('p-mes-ini').value);
-  const mesFim=parseInt(document.getElementById('p-mes-fim').value);
-  const ano=parseInt(document.getElementById('p-ano').value)||2026;
-  if(!desc||!valor)return alert('Preencha descrição e valor.');
-  projecoes.push({id:idSeq++,tipo,desc,valor,mesIni,mesFim,ano});
-  document.getElementById('p-desc').value='';
-  document.getElementById('p-valor').value='';
-  renderProjecoes();
-}
-function remProjecao(id){projecoes=projecoes.filter(p=>p.id!==id);renderProjecoes();}
-function renderProjecoes(){
-  const el=document.getElementById('tabela-projecoes');
-  if(!projecoes.length){el.innerHTML='<div class="empty">Nenhuma projeção.</div>';return;}
-  el.innerHTML=`<table><thead><tr><th>Período</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor/mês</th><th></th></tr></thead><tbody>`+
-    projecoes.map(p=>`<tr>
-      <td>${MESES[p.mesIni].substring(0,3)}${p.mesIni!==p.mesFim?' → '+MESES[p.mesFim].substring(0,3):''} ${p.ano}</td>
-      <td><span class="badge ${TIPOS_BADGE[p.tipo]}">${TIPOS_LABEL[p.tipo]}</span></td>
-      <td>${p.desc}</td>
-      <td class="num">${fmt(p.valor)}</td>
-      <td><button class="btn danger" onclick="remProjecao(${p.id})"><i class="ti ti-trash"></i></button></td>
-    </tr>`).join('')+'</tbody></table>';
-}
-
-// ── CONSOLIDAÇÃO ────────────────────────────────────────────────
-function allItems(mesFilter,anoFilter){
-  const items=[];
-  lancamentos.forEach(l=>{
-    if((mesFilter===0||l.mes===mesFilter)&&(!anoFilter||l.ano===anoFilter))
-      items.push({...l,source:'avulso'});
+  const btn = document.getElementById('btn-add-df');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner" style="border-top-color:var(--blue)"></span> Salvando...';
+  const filePath = await uploadFile(currentFileDf, 'recorrentes');
+  const total = Object.values(valoresPorMes).reduce((a, b) => a + b, 0);
+  const parcelas = Object.keys(valoresPorMes).length;
+  const { error } = await sb.from('despesas_recorrentes').insert({
+    natureza, tipo, descricao: desc, mes_ini: mesIni, mes_fim: mesFim, ano_ini: anoIni, ano_fim: anoFim,
+    valores_por_mes: valoresPorMes, total, parcelas, file_path: filePath, user_id: currentUser.id
   });
-  despesasFixas.forEach(d=>{
-    Object.entries(d.valoresPorMes).forEach(([key,v])=>{
-      if(!v)return;
-      const [a,m]=[parseInt(key.split('-')[0]),parseInt(key.split('-')[1])];
-      if((mesFilter===0||m===mesFilter)&&(!anoFilter||a===anoFilter))
-        items.push({id:d.id+'_'+key,tipo:d.tipo,desc:d.desc,valor:v,mes:m,ano:a,source:d.natureza==='fixa'?'fixa':'variavel',hasFile:d.hasFile,fileOwner:d.id});
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Adicionar';
+  if (error) return toast('Erro: ' + error.message);
+  document.getElementById('df-desc').value = ''; document.getElementById('df-valor').value = '';
+  document.getElementById('df-file-chip').innerHTML = ''; document.getElementById('df-file').value = '';
+  document.getElementById('df-variaveis-area').style.display = 'none';
+  document.getElementById('df-natureza').value = 'fixa';
+  document.getElementById('df-valor-fixo').style.display = 'block';
+  currentFileDf = null;
+  toast('Despesa recorrente salva!'); renderRecorrentes();
+}
+
+async function renderRecorrentes() {
+  const { data } = await sb.from('despesas_recorrentes').select('*').order('created_at', { ascending: false });
+  const el = document.getElementById('tabela-recorrentes');
+  if (!data?.length) { el.innerHTML = '<div class="empty">Nenhuma despesa recorrente.</div>'; return; }
+  el.innerHTML = `<table style="font-size:12px"><thead><tr>
+    <th>Natureza</th><th>Categoria</th><th>Descrição</th><th>Período</th><th style="text-align:right">Total</th><th>Doc</th><th></th>
+  </tr></thead><tbody>` +
+    data.map(d => `<tr>
+      <td><span class="badge ${d.natureza}">${d.natureza === 'fixa' ? 'Fixa' : 'Variável'}</span></td>
+      <td><span class="badge ${d.tipo}">${TIPOS_LABEL[d.tipo]}</span></td>
+      <td>${d.descricao}<br><span style="color:var(--text3);font-size:10px">${d.parcelas} parcela${d.parcelas > 1 ? 's' : ''}</span></td>
+      <td style="white-space:nowrap">${MESES[d.mes_ini].substring(0,3)}/${d.ano_ini} → ${MESES[d.mes_fim].substring(0,3)}/${d.ano_fim}</td>
+      <td class="num">${fmt(d.total)}</td>
+      <td>${d.file_path ? `<button class="btn sm" onclick="verComprovante('${d.file_path}','${d.descricao}')"><i class="ti ti-paperclip"></i></button>` : '—'}</td>
+      <td><button class="btn danger" onclick="remRecorrente('${d.id}')"><i class="ti ti-trash"></i></button></td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+async function remRecorrente(id) {
+  if (!confirm('Remover esta despesa recorrente?')) return;
+  await sb.from('despesas_recorrentes').delete().eq('id', id);
+  toast('Removida.'); renderRecorrentes();
+}
+
+// ── PROJEÇÕES ────────────────────────────────────────────────────
+async function addProjecao() {
+  const desc = document.getElementById('p-desc').value.trim();
+  const tipo = document.getElementById('p-tipo').value;
+  const valor = parseFloat(document.getElementById('p-valor').value) || 0;
+  const mesIni = parseInt(document.getElementById('p-mes-ini').value);
+  const mesFim = parseInt(document.getElementById('p-mes-fim').value);
+  const ano = parseInt(document.getElementById('p-ano').value) || 2026;
+  if (!desc || !valor) return alert('Preencha descrição e valor.');
+  const btn = document.getElementById('btn-add-proj');
+  btn.disabled = true;
+  const { error } = await sb.from('projecoes').insert({ tipo, descricao: desc, valor, mes_ini: mesIni, mes_fim: mesFim, ano, user_id: currentUser.id });
+  btn.disabled = false;
+  if (error) return toast('Erro: ' + error.message);
+  document.getElementById('p-desc').value = ''; document.getElementById('p-valor').value = '';
+  toast('Projeção salva!'); renderProjecoes();
+}
+
+async function renderProjecoes() {
+  const { data } = await sb.from('projecoes').select('*').order('created_at', { ascending: false });
+  const el = document.getElementById('tabela-projecoes');
+  if (!data?.length) { el.innerHTML = '<div class="empty">Nenhuma projeção.</div>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Período</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor/mês</th><th></th></tr></thead><tbody>` +
+    data.map(p => `<tr>
+      <td>${MESES[p.mes_ini].substring(0,3)}${p.mes_ini !== p.mes_fim ? ' → ' + MESES[p.mes_fim].substring(0,3) : ''} ${p.ano}</td>
+      <td><span class="badge ${p.tipo}">${TIPOS_LABEL[p.tipo]}</span></td>
+      <td>${p.descricao}</td>
+      <td class="num">${fmt(p.valor)}</td>
+      <td><button class="btn danger" onclick="remProjecao('${p.id}')"><i class="ti ti-trash"></i></button></td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+async function remProjecao(id) {
+  if (!confirm('Remover esta projeção?')) return;
+  await sb.from('projecoes').delete().eq('id', id);
+  toast('Removida.'); renderProjecoes();
+}
+
+// ── DRE ──────────────────────────────────────────────────────────
+async function renderDRE() {
+  const mes = parseInt(document.getElementById('dre-mes').value);
+  const ano = parseInt(document.getElementById('dre-ano').value) || 2026;
+  document.getElementById('dre-content').innerHTML = '<div class="empty">Carregando...</div>';
+
+  // Lançamentos
+  let lq = sb.from('lancamentos').select('tipo,valor,mes,ano').eq('ano', ano);
+  if (mes > 0) lq = lq.eq('mes', mes);
+  const { data: lanc } = await lq;
+
+  // Recorrentes
+  const { data: rec } = await sb.from('despesas_recorrentes').select('tipo,valores_por_mes,ano_ini,ano_fim,mes_ini,mes_fim');
+  const recItems = [];
+  (rec || []).forEach(d => {
+    Object.entries(d.valores_por_mes || {}).forEach(([key, v]) => {
+      if (!v) return;
+      const [a, m] = [parseInt(key.split('-')[0]), parseInt(key.split('-')[1])];
+      if (a === ano && (mes === 0 || m === mes)) recItems.push({ tipo: d.tipo, valor: v, mes: m, ano: a });
     });
   });
-  projecoes.forEach(p=>{
-    for(let m=p.mesIni;m<=p.mesFim;m++){
-      if((mesFilter===0||m===mesFilter)&&(!anoFilter||p.ano===anoFilter))
-        items.push({id:p.id+'_'+m,tipo:p.tipo,desc:p.desc,valor:p.valor,mes:m,ano:p.ano,source:'projecao',hasFile:false});
+
+  // Projeções
+  let pq = sb.from('projecoes').select('tipo,valor,mes_ini,mes_fim,ano').eq('ano', ano);
+  const { data: proj } = await pq;
+  const projItems = [];
+  (proj || []).forEach(p => {
+    for (let m = p.mes_ini; m <= p.mes_fim; m++) {
+      if (mes === 0 || m === mes) projItems.push({ tipo: p.tipo, valor: p.valor, mes: m, ano: p.ano });
     }
   });
-  return items;
-}
 
-function sum(items,tipo){return items.filter(i=>i.tipo===tipo).reduce((a,b)=>a+b.valor,0);}
+  const all = [...(lanc || []), ...recItems, ...projItems];
+  const sum = (tipo) => all.filter(i => i.tipo === tipo).reduce((a, b) => a + b.valor, 0);
 
-// ── DRE ────────────────────────────────────────────────
-function renderDRE(){
-  const mes=parseInt(document.getElementById('dre-mes').value);
-  const ano=parseInt(document.getElementById('dre-ano').value)||2026;
-  const items=allItems(mes,ano);
-  const label=mes===0?`Acumulado ${ano}`:MESES[mes]+'/'+ano;
+  const recVal = sum('receita'); const ded = sum('deducao'); const recLiq = recVal - ded;
+  const cus = sum('custo'); const lb = recLiq - cus;
+  const dc = sum('despesa_com'); const da = sum('despesa_adm'); const lop = lb - dc - da;
+  const fr = sum('fin_rec'); const fd = sum('fin_desp'); const res = lop + fr - fd;
+  const label = mes === 0 ? `Acumulado ${ano}` : MESES[mes] + '/' + ano;
+  const isAdmin = currentRole === 'admin';
 
-  const rec=sum(items,'receita');
-  const ded=sum(items,'deducao');
-  const recLiq=rec-ded;
-  const cus=sum(items,'custo');
-  const lb=recLiq-cus;
-  const dc=sum(items,'despesa_com');
-  const da=sum(items,'despesa_adm');
-  const lop=lb-dc-da;
-  const fr=sum(items,'fin_rec');
-  const fd=sum(items,'fin_desp');
-  const res=lop+fr-fd;
-
-  const N=(v,tipo)=>{
-    const cls=v>=0?'pos':'neg';
-    const click=tipo?`class="num ${cls} clickable" onclick="openDetail('${tipo}',${mes},${ano})" title="Ver detalhamento"`:`class="num ${cls}"`;
-    return`<span ${click}>${fmtN(v)}</span>`;
+  const N = (v, tipo) => {
+    const cls = v >= 0 ? 'pos' : 'neg';
+    const click = isAdmin && tipo ? `class="num ${cls} clickable" onclick="openDetail('${tipo}',${mes},${ano})" title="Ver detalhamento"` : `class="num ${cls}"`;
+    return `<span ${click}>${fmtN(v)}</span>`;
   };
-  const R=(label,v,cls,tipo,indent)=>
-    `<tr class="${cls}"><td style="padding-left:${indent||8}px">${label}</td><td>${N(v,tipo)}</td></tr>`;
+  const R = (lbl, v, cls, tipo, indent) =>
+    `<tr class="${cls}"><td style="padding-left:${indent || 8}px">${lbl}</td><td>${N(v, tipo)}</td></tr>`;
 
-  const html=`<div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:500">${label}</div>
+  document.getElementById('dre-content').innerHTML = `
+  <div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:600">${label}</div>
   <table class="dre-tbl">
   <thead><tr><th>Categoria</th><th style="width:200px">${label}</th></tr></thead>
   <tbody>
-  ${R('Receitas operacionais',rec,'grp','receita',8)}
-  ${R('Receita de vendas',rec,'sub','receita',28)}
+  ${R('Receitas operacionais', recVal, 'grp', 'receita', 8)}
+  ${R('Receita de vendas', recVal, 'sub', 'receita', 28)}
   <tr class="spacer"><td colspan="2"></td></tr>
-  ${R('(−) Deduções da receita bruta',-ded,'grp','deducao',8)}
-  ${R('Descontos e devoluções',-ded,'sub','deducao',28)}
-  <tr class="subtotal"><td style="padding-left:8px;font-weight:600">Receita líquida de vendas</td><td>${N(recLiq,null)}</td></tr>
+  ${R('(−) Deduções da receita bruta', -ded, 'grp', 'deducao', 8)}
+  ${R('Descontos e devoluções', -ded, 'sub', 'deducao', 28)}
+  <tr class="subtotal"><td style="padding-left:8px">Receita líquida de vendas</td><td>${N(recLiq, null)}</td></tr>
   <tr class="spacer"><td colspan="2"></td></tr>
-  ${R('(−) Custos operacionais',-cus,'grp','custo',8)}
-  ${R('Custo das vendas / produtos',-cus,'sub','custo',28)}
-  <tr class="subtotal"><td style="padding-left:8px;font-weight:600">Lucro bruto</td><td>${N(lb,null)}</td></tr>
+  ${R('(−) Custos operacionais', -cus, 'grp', 'custo', 8)}
+  ${R('Custo das vendas / produtos', -cus, 'sub', 'custo', 28)}
+  <tr class="subtotal"><td style="padding-left:8px">Lucro bruto</td><td>${N(lb, null)}</td></tr>
   <tr class="spacer"><td colspan="2"></td></tr>
-  ${R('(−) Despesas operacionais',-(dc+da),'grp',null,8)}
-  ${R('Despesas comerciais',-dc,'sub','despesa_com',28)}
-  ${R('Despesas administrativas',-da,'sub','despesa_adm',28)}
-  <tr class="subtotal"><td style="padding-left:8px;font-weight:600">Lucro / Prejuízo operacional</td><td>${N(lop,null)}</td></tr>
+  ${R('(−) Despesas operacionais', -(dc + da), 'grp', null, 8)}
+  ${R('Despesas comerciais', -dc, 'sub', 'despesa_com', 28)}
+  ${R('Despesas administrativas', -da, 'sub', 'despesa_adm', 28)}
+  <tr class="subtotal"><td style="padding-left:8px">Lucro / Prejuízo operacional</td><td>${N(lop, null)}</td></tr>
   <tr class="spacer"><td colspan="2"></td></tr>
-  ${R('Receitas financeiras',fr,'grp','fin_rec',8)}
-  ${R('(−) Despesas financeiras',-fd,'grp','fin_desp',8)}
-  <tr class="grand"><td style="padding-left:8px">Resultado líquido do exercício</td><td>${N(res,null)}</td></tr>
+  ${R('Receitas financeiras', fr, 'grp', 'fin_rec', 8)}
+  ${R('(−) Despesas financeiras', -fd, 'grp', 'fin_desp', 8)}
+  <tr class="grand"><td style="padding-left:8px">Resultado líquido do exercício</td><td>${N(res, null)}</td></tr>
   </tbody></table>`;
-
-  document.getElementById('dre-content').innerHTML=html;
 }
 
-function openDetail(tipo,mes,ano){
-  const items=allItems(mes,ano).filter(i=>i.tipo===tipo);
-  const label=mes===0?`Acumulado ${ano}`:MESES[mes]+'/'+ano;
-  document.getElementById('modal-title').textContent=TIPOS_LABEL[tipo]+' — '+label;
-  if(!items.length){document.getElementById('modal-content').innerHTML='<div class="empty">Sem lançamentos nesta categoria.</div>';}
-  else{
-    const total=items.reduce((a,b)=>a+b.valor,0);
-    const sourceLabel={avulso:'Avulso',fixa:'Fixa',variavel:'Variável',projecao:'Projeção'};
-    document.getElementById('modal-content').innerHTML=`
-      <table style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead><tr style="border-bottom:1px solid var(--border)">
-          <th style="padding:6px 8px;text-align:left;font-size:11px;color:var(--text2)">Mês/Ano</th>
-          <th style="padding:6px 8px;text-align:left;font-size:11px;color:var(--text2)">Descrição</th>
-          <th style="padding:6px 8px;text-align:left;font-size:11px;color:var(--text2)">Origem</th>
-          <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--text2)">Valor</th>
-          <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Doc</th>
-        </tr></thead>
-        <tbody>
-          ${items.map(i=>{
-            const fileId=i.fileOwner||i.id;
-            return`<tr style="border-bottom:1px solid var(--border)">
-              <td style="padding:6px 8px">${MESES[i.mes]}/${i.ano}</td>
-              <td style="padding:6px 8px">${i.desc}</td>
-              <td style="padding:6px 8px"><span class="badge ${i.source==='projecao'?'proj':i.source==='fixa'?'fixa':'variavel'}">${sourceLabel[i.source]||i.source}</span></td>
-              <td style="padding:6px 8px" class="num">${fmt(i.valor)}</td>
-              <td style="padding:6px 8px">${i.hasFile?`<button class="btn sm" onclick="verRecibo(${fileId})"><i class="ti ti-paperclip"></i></button>`:'—'}</td>
-            </tr>`;
-          }).join('')}
-          <tr style="font-weight:600;background:var(--surface2)">
-            <td colspan="3" style="padding:7px 8px">Total</td>
-            <td style="padding:7px 8px" class="num">${fmt(total)}</td>
-            <td></td>
-          </tr>
-        </tbody>
-      </table>`;
-  }
+async function openDetail(tipo, mes, ano) {
+  const all = [];
+  let lq = sb.from('lancamentos').select('descricao,valor,mes,ano').eq('tipo', tipo).eq('ano', ano);
+  if (mes > 0) lq = lq.eq('mes', mes);
+  const { data: lanc } = await lq;
+  (lanc || []).forEach(i => all.push({ descricao: i.descricao, valor: i.valor, mes: i.mes, ano: i.ano, file_path: i.file_path, source: 'Avulso' }));
+
+  const { data: rec } = await sb.from('despesas_recorrentes').select('desc,tipo,valores_por_mes,file_path').eq('tipo', tipo);
+  (rec || []).forEach(d => {
+    Object.entries(d.valores_por_mes || {}).forEach(([key, v]) => {
+      if (!v) return;
+      const [a, m] = [parseInt(key.split('-')[0]), parseInt(key.split('-')[1])];
+      if (a === ano && (mes === 0 || m === mes)) all.push({ desc: d.desc, valor: v, mes: m, ano: a, source: 'Recorrente', file_path: d.file_path });
+    });
+  });
+
+  const { data: proj } = await sb.from('projecoes').select('desc,valor,mes_ini,mes_fim,ano').eq('tipo', tipo).eq('ano', ano);
+  (proj || []).forEach(p => {
+    for (let m = p.mes_ini; m <= p.mes_fim; m++) {
+      if (mes === 0 || m === mes) all.push({ desc: p.desc, valor: p.valor, mes: m, ano: p.ano, source: 'Projeção' });
+    }
+  });
+
+  const label = mes === 0 ? `Acumulado ${ano}` : MESES[mes] + '/' + ano;
+  document.getElementById('modal-title').textContent = TIPOS_LABEL[tipo] + ' — ' + label;
+  const total = all.reduce((a, b) => a + b.valor, 0);
+  document.getElementById('modal-content').innerHTML = !all.length
+    ? '<div class="empty">Sem lançamentos nesta categoria.</div>'
+    : `<table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Mês/Ano</th>
+        <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Descrição</th>
+        <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Origem</th>
+        <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--text2)">Valor</th>
+        <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Doc</th>
+      </tr></thead><tbody>
+      ${all.map(i => `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:6px 8px">${MESES[i.mes]}/${i.ano}</td>
+        <td style="padding:6px 8px">${i.descricao}</td>
+        <td style="padding:6px 8px"><span class="badge proj">${i.source}</span></td>
+        <td style="padding:6px 8px" class="num">${fmt(i.valor)}</td>
+        <td style="padding:6px 8px">${i.file_path ? `<button class="btn sm" onclick="verComprovante('${i.file_path}','${i.descricao}')"><i class="ti ti-paperclip"></i></button>` : '—'}</td>
+      </tr>`).join('')}
+      <tr style="font-weight:700;background:var(--surface2)">
+        <td colspan="3" style="padding:7px 8px">Total</td>
+        <td style="padding:7px 8px" class="num">${fmt(total)}</td><td></td>
+      </tr></tbody></table>`;
   document.getElementById('modal-overlay').classList.add('open');
 }
 
-function verRecibo(id){
-  const f=allFiles[id];
-  if(!f)return;
-  document.getElementById('recibo-title').textContent=f.name||'Comprovante';
-  const isImg=f.data.startsWith('data:image');
-  document.getElementById('recibo-content').innerHTML=isImg
-    ?`<img src="${f.data}" style="width:100%;border-radius:6px"/>`
-    :`<embed src="${f.data}" type="application/pdf" width="100%" height="420px" style="border-radius:6px"/>`;
+async function verComprovante(path, name) {
+  const url = await getFileUrl(path);
+  if (!url) return toast('Arquivo não encontrado.');
+  document.getElementById('recibo-title').textContent = name || 'Comprovante';
+  const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(path);
+  document.getElementById('recibo-content').innerHTML = isImg
+    ? `<img src="${url}" style="width:100%;border-radius:6px"/>`
+    : `<embed src="${url}" type="application/pdf" width="100%" height="430px" style="border-radius:6px"/>`;
   document.getElementById('recibo-overlay').classList.add('open');
 }
 
-function closeModal(e,force){if(force||e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('open');}
-function closeRecibo(e,force){if(force||e.target===document.getElementById('recibo-overlay'))document.getElementById('recibo-overlay').classList.remove('open');}
+// ── USUÁRIOS ─────────────────────────────────────────────────────
+async function addUsuario() {
+  const nome = document.getElementById('u-nome').value.trim();
+  const email = document.getElementById('u-email').value.trim();
+  const role = document.getElementById('u-role').value;
+  const senha = document.getElementById('u-senha').value;
+  if (!nome || !email || !senha) return alert('Preencha nome, e-mail e senha.');
+  if (senha.length < 6) return alert('Senha mínima de 6 caracteres.');
+  const btn = document.getElementById('btn-add-user');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner" style="border-top-color:var(--blue)"></span> Criando...';
+  // Create user via admin API through edge function or direct sign up
+  const { data, error } = await sb.auth.signUp({ email, password: senha, options: { data: { name: nome } } });
+  if (error) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-user-plus"></i> Criar usuário'; return toast('Erro: ' + error.message); }
+  if (data.user) {
+    await sb.from('user_profiles').upsert({ id: data.user.id, name: nome, email, role });
+  }
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-user-plus"></i> Criar usuário';
+  document.getElementById('u-nome').value = ''; document.getElementById('u-email').value = ''; document.getElementById('u-senha').value = '';
+  toast('Usuário criado! Peça para ele confirmar o e-mail.'); renderUsuarios();
+}
 
-renderDRE();
+async function renderUsuarios() {
+  const { data } = await sb.from('user_profiles').select('*').order('name');
+  const el = document.getElementById('tabela-usuarios');
+  if (!data?.length) { el.innerHTML = '<div class="empty">Nenhum usuário cadastrado.</div>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Ações</th></tr></thead><tbody>` +
+    data.map(u => `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="user-avatar" style="width:28px;height:28px;font-size:11px">${(u.name||'?').charAt(0).toUpperCase()}</div>${u.name || '—'}
+      </div></td>
+      <td style="color:var(--text2)">${u.email || '—'}</td>
+      <td><span class="badge ${u.role === 'admin' ? 'admin-role' : 'viewer-role'}">${u.role === 'admin' ? 'Administrador' : 'Visualizador'}</span></td>
+      <td><div style="display:flex;gap:6px">
+        ${u.id !== currentUser.id ? `
+          <button class="btn sm" onclick="toggleRole('${u.id}','${u.role}')"><i class="ti ti-switch-horizontal"></i> Trocar perfil</button>
+          <button class="btn danger" onclick="remUsuario('${u.id}')"><i class="ti ti-trash"></i></button>` : '<span style="font-size:11px;color:var(--text3)">Você</span>'}
+      </div></td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+async function toggleRole(id, current) {
+  const newRole = current === 'admin' ? 'viewer' : 'admin';
+  await sb.from('user_profiles').update({ role: newRole }).eq('id', id);
+  toast('Perfil alterado.'); renderUsuarios();
+}
+async function remUsuario(id) {
+  if (!confirm('Remover este usuário do sistema?')) return;
+  await sb.from('user_profiles').delete().eq('id', id);
+  toast('Usuário removido.'); renderUsuarios();
+}
+
+// ── MODALS ───────────────────────────────────────────────────────
+function closeModal(e, force) { if (force || e.target === document.getElementById('modal-overlay')) document.getElementById('modal-overlay').classList.remove('open'); }
+function closeRecibo(e, force) { if (force || e.target === document.getElementById('recibo-overlay')) document.getElementById('recibo-overlay').classList.remove('open'); }
+
+// ── START ────────────────────────────────────────────────────────
+init();
 </script>
 </body>
 </html>
