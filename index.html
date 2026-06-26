@@ -19,46 +19,37 @@
   --radius:8px;--radius-lg:12px;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg);min-height:100vh}
-
-/* AUTH */
 .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f2942 0%,#185FA5 100%)}
-.auth-card{background:#fff;border-radius:16px;padding:36px 40px;width:400px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.auth-card{background:#fff;border-radius:16px;padding:36px 40px;width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.2)}
 .auth-logo{text-align:center;margin-bottom:28px}
-.auth-logo i{font-size:40px;color:var(--blue)}
-.auth-logo h1{font-size:22px;font-weight:700;margin-top:8px;color:var(--text)}
+.auth-company-logo{width:90px;height:90px;border-radius:12px;object-fit:contain;margin-bottom:10px;border:1px solid var(--border)}
+.auth-logo-icon{font-size:44px;color:var(--blue);margin-bottom:8px}
+.auth-logo h1{font-size:22px;font-weight:700;color:var(--text)}
 .auth-logo p{font-size:13px;color:var(--text2);margin-top:4px}
 .auth-error{background:var(--red-bg);color:var(--red-text);border-radius:var(--radius);padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
-
-/* TOPBAR */
-.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:50;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.topbar-brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:var(--blue)}
-.topbar-brand i{font-size:22px}
-.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:50;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.topbar-brand{display:flex;align-items:center;gap:10px}
+.topbar-logo{height:36px;width:36px;border-radius:8px;object-fit:contain;border:1px solid var(--border);display:none}
+.topbar-logo-icon{font-size:26px;color:var(--blue)}
+.topbar-name{font-weight:700;font-size:15px;color:var(--blue)}
+.topbar-right{display:flex;align-items:center;gap:10px}
 .user-chip{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text2)}
-.user-avatar{width:30px;height:30px;border-radius:50%;background:var(--blue-bg);color:var(--blue-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:var(--blue-bg);color:var(--blue-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
 .role-badge{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
 .role-badge.admin{background:var(--blue-bg);color:var(--blue-text)}
 .role-badge.viewer{background:var(--surface2);color:var(--text2)}
-
-/* TABS */
-.tabs{display:flex;gap:2px;background:var(--surface2);border-radius:var(--radius);padding:3px}
-.tab{padding:6px 13px;border-radius:6px;border:none;background:transparent;font-size:13px;cursor:pointer;color:var(--text2);font-family:inherit;display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap}
+.tabs{display:flex;gap:2px;background:var(--surface2);border-radius:var(--radius);padding:3px;flex-wrap:wrap}
+.tab{padding:5px 12px;border-radius:6px;border:none;background:transparent;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s;white-space:nowrap}
 .tab.active{background:#fff;color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .tab:hover:not(.active){background:rgba(0,0,0,.04)}
-
-/* LAYOUT */
-.content{padding:20px;max-width:1280px;margin:0 auto}
+.content{padding:20px;max-width:1400px;margin:0 auto}
 .panel{display:none}.panel.active{display:block}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-
-/* CARDS */
 .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px}
 .card-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:14px;display:flex;align-items:center;gap:6px}
 .metric-card{background:var(--surface2);border-radius:var(--radius);padding:14px;text-align:center}
 .metric-label{font-size:11px;color:var(--text3);margin-bottom:4px}
 .metric-value{font-size:20px;font-weight:700}
-
-/* FORM */
 label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;margin-top:12px;font-weight:500}
 label.first{margin-top:0}
 input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;font-family:inherit;background:#fff;color:var(--text);transition:border-color .15s}
@@ -67,8 +58,6 @@ input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 
 .form-row.cols2{grid-template-columns:1fr 1fr}
 .form-row.cols3{grid-template-columns:1fr 1fr 1fr}
 .form-row.cols4{grid-template-columns:1fr 1fr 1fr 1fr}
-
-/* BUTTONS */
 .btn{padding:8px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:#fff;color:var(--text);font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
 .btn:hover{background:var(--surface2)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
@@ -78,13 +67,9 @@ input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 
 .btn.sm{padding:4px 8px;font-size:12px}
 .btn.full{width:100%;justify-content:center;padding:10px}
 .btn-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-
-/* UPLOAD */
 .upload-zone{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:14px;text-align:center;cursor:pointer;font-size:12px;color:var(--text3);transition:all .15s;margin-top:4px}
 .upload-zone:hover{background:var(--surface2);border-color:var(--blue)}
 .file-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--blue-bg);color:var(--blue-text);border-radius:6px;font-size:12px;margin-top:6px}
-
-/* BADGE */
 .badge{padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap}
 .badge.receita{background:var(--green-bg);color:var(--green-text)}
 .badge.deducao,.badge.despesa,.badge.fin_desp{background:var(--red-bg);color:var(--red-text)}
@@ -95,8 +80,6 @@ input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 
 .badge.proj{background:var(--surface2);color:var(--text3)}
 .badge.admin-role{background:var(--blue-bg);color:var(--blue-text)}
 .badge.viewer-role{background:var(--surface2);color:var(--text2)}
-
-/* TABLE */
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-weight:600;font-size:11px;color:var(--text2);white-space:nowrap}
@@ -105,8 +88,6 @@ tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surface2)}
 .num{font-variant-numeric:tabular-nums;text-align:right}
 .neg{color:var(--red)}.pos{color:var(--green)}
-
-/* DRE */
 .dre-wrap{overflow-x:auto}
 .dre-tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}
 .dre-tbl th{padding:7px 10px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);font-weight:600;text-align:right}
@@ -120,16 +101,33 @@ tr:hover td{background:var(--surface2)}
 .dre-tbl tr.spacer td{height:5px;background:var(--bg);border:none}
 .clickable{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
 .clickable:hover{color:var(--blue)}
-
-/* MODAL */
+/* FLUXO DE CAIXA */
+.fc-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:900px}
+.fc-tbl th{padding:7px 8px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);font-weight:600;text-align:right;white-space:nowrap}
+.fc-tbl th:first-child{text-align:left;min-width:180px;position:sticky;left:0;background:#fff;z-index:1}
+.fc-tbl td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+.fc-tbl td:first-child{text-align:left;position:sticky;left:0;background:#fff;z-index:1;font-size:12px}
+.fc-tbl tr.fc-grp td{font-weight:700;background:var(--surface2)}
+.fc-tbl tr.fc-grp td:first-child{background:var(--surface2)}
+.fc-tbl tr.fc-sub td{color:var(--text2);font-size:11px}
+.fc-tbl tr.fc-sub td:first-child{padding-left:20px}
+.fc-tbl tr.fc-total td{font-weight:700;border-top:2px solid var(--border2);background:#fafbfc}
+.fc-tbl tr.fc-total td:first-child{background:#fafbfc}
+.fc-tbl tr.fc-saldo td{font-weight:700;font-size:13px;background:var(--blue-bg);color:var(--blue-text)}
+.fc-tbl tr.fc-saldo td:first-child{background:var(--blue-bg);color:var(--blue-text)}
+.fc-tbl tr.fc-acum td{font-weight:600;background:#EAF3DE;color:var(--green-text)}
+.fc-tbl tr.fc-acum td:first-child{background:#EAF3DE;color:var(--green-text)}
+.fc-col-neg{color:var(--red)!important}
+.fc-col-pos{color:var(--green)!important}
+/* LOGO UPLOAD */
+.logo-preview{width:80px;height:80px;border-radius:10px;object-fit:contain;border:1px solid var(--border);display:block}
+.logo-placeholder{width:80px;height:80px;border-radius:10px;border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--surface2);color:var(--text3);font-size:11px;text-align:center;flex-direction:column;gap:4px}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px}
 .overlay.open{display:flex}
 .modal{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;width:640px;max-width:100%;max-height:88vh;overflow-y:auto}
 .modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
 .modal-hd h2{font-size:15px;font-weight:700}
 .close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text2);line-height:1}
-
-/* MISC */
 .empty{text-align:center;padding:36px 16px;color:var(--text3);font-size:13px}
 .divider{height:1px;background:var(--border);margin:16px 0}
 .info-box{background:var(--blue-bg);border-radius:var(--radius);padding:10px 14px;font-size:12px;color:var(--blue-text);margin-bottom:14px;display:flex;align-items:flex-start;gap:8px}
@@ -143,18 +141,17 @@ tr:hover td{background:var(--surface2)}
 </head>
 <body>
 
-<!-- LOADING -->
 <div id="loading-screen" class="loading-screen">
-  <i class="ti ti-chart-bar"></i>
-  <span>Carregando...</span>
+  <i class="ti ti-chart-bar"></i><span>Carregando...</span>
 </div>
 
 <!-- AUTH -->
 <div id="auth-screen" class="auth-screen" style="display:none">
   <div class="auth-card">
     <div class="auth-logo">
-      <i class="ti ti-chart-bar"></i>
-      <h1>DRE Gerencial</h1>
+      <img id="auth-company-logo" class="auth-company-logo" style="display:none"/>
+      <div id="auth-logo-icon" class="auth-logo-icon"><i class="ti ti-chart-bar"></i></div>
+      <h1 id="auth-company-name">DRE Gerencial</h1>
       <p>Faça login para continuar</p>
     </div>
     <div class="auth-error" id="auth-error"></div>
@@ -173,12 +170,18 @@ tr:hover td{background:var(--surface2)}
 <!-- APP -->
 <div id="app-screen" style="display:none">
   <div class="topbar">
-    <div class="topbar-brand"><i class="ti ti-chart-bar"></i> DRE Gerencial</div>
+    <div class="topbar-brand">
+      <img id="topbar-logo-img" class="topbar-logo"/>
+      <i class="ti ti-chart-bar topbar-logo-icon" id="topbar-logo-icon"></i>
+      <span class="topbar-name" id="topbar-company-name">DRE Gerencial</span>
+    </div>
     <div class="tabs" id="main-tabs">
       <button class="tab active" onclick="switchTab('dre')" id="tab-dre"><i class="ti ti-file-analytics"></i> DRE</button>
+      <button class="tab" onclick="switchTab('fluxo')" id="tab-fluxo"><i class="ti ti-cash"></i> Fluxo de Caixa</button>
       <button class="tab" onclick="switchTab('lancamentos')" id="tab-lancamentos" style="display:none"><i class="ti ti-list"></i> Lançamentos</button>
       <button class="tab" onclick="switchTab('recorrentes')" id="tab-recorrentes" style="display:none"><i class="ti ti-repeat"></i> Fixas/Variáveis</button>
       <button class="tab" onclick="switchTab('projecao')" id="tab-projecao" style="display:none"><i class="ti ti-trending-up"></i> Projeção</button>
+      <button class="tab" onclick="switchTab('configuracoes')" id="tab-configuracoes" style="display:none"><i class="ti ti-settings"></i> Config.</button>
       <button class="tab" onclick="switchTab('usuarios')" id="tab-usuarios" style="display:none"><i class="ti ti-users"></i> Usuários</button>
     </div>
     <div class="topbar-right">
@@ -211,6 +214,22 @@ tr:hover td{background:var(--surface2)}
       <div class="card">
         <div class="dre-wrap" id="dre-content"><div class="empty">Carregando dados...</div></div>
       </div>
+    </div>
+
+    <!-- FLUXO DE CAIXA -->
+    <div id="panel-fluxo" class="panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div style="font-size:13px;font-weight:600;color:var(--text2)">Fluxo de Caixa por Competência — mensal</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="fc-ano" type="number" value="2026" min="2020" max="2040" onchange="renderFluxo()" style="width:90px"/>
+          <button class="btn sm" onclick="renderFluxo()"><i class="ti ti-refresh"></i> Atualizar</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="overflow-x:auto" id="fluxo-content"><div class="empty">Carregando...</div></div>
+      </div>
+      <!-- CARDS RESUMO ANUAL -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px" id="fc-resumo"></div>
     </div>
 
     <!-- LANÇAMENTOS -->
@@ -260,22 +279,18 @@ tr:hover td{background:var(--surface2)}
         </div>
         <div class="card">
           <div class="card-title"><i class="ti ti-chart-donut"></i> Resumo</div>
-          <div style="margin-bottom:12px">
-            <div class="form-row cols2">
-              <div>
-                <label class="first">Mês</label>
-                <select id="filter-mes" onchange="renderTabela()">
-                  <option value="0">Todos</option>
-                  <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
-                  <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-                  <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-                  <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-                </select>
-              </div>
-              <div>
-                <label class="first">Ano</label>
-                <input id="filter-ano" type="number" value="2026" min="2020" max="2040" onchange="renderTabela()"/>
-              </div>
+          <div class="form-row cols2" style="margin-bottom:12px">
+            <div><label class="first">Mês</label>
+              <select id="filter-mes" onchange="renderTabela()">
+                <option value="0">Todos</option>
+                <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+                <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+                <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+                <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+              </select>
+            </div>
+            <div><label class="first">Ano</label>
+              <input id="filter-ano" type="number" value="2026" min="2020" max="2040" onchange="renderTabela()"/>
             </div>
           </div>
           <div class="grid2" style="gap:8px">
@@ -295,21 +310,19 @@ tr:hover td{background:var(--surface2)}
     <!-- RECORRENTES -->
     <div id="panel-recorrentes" class="panel">
       <div class="info-box"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i>
-        Despesas com recorrência automática. Cada parcela entra automaticamente no DRE no mês correspondente.
+        Despesas com recorrência automática. Cada parcela entra automaticamente no DRE e no Fluxo de Caixa.
       </div>
       <div class="grid2" style="margin-bottom:14px;align-items:start">
         <div class="card">
           <div class="card-title"><i class="ti ti-plus"></i> Nova despesa recorrente</div>
           <div class="form-row cols2">
-            <div>
-              <label class="first">Natureza</label>
+            <div><label class="first">Natureza</label>
               <select id="df-natureza" onchange="toggleVariavel()">
                 <option value="fixa">Fixa (mesmo valor)</option>
                 <option value="variavel">Variável (por mês)</option>
               </select>
             </div>
-            <div>
-              <label class="first">Categoria DRE</label>
+            <div><label class="first">Categoria DRE</label>
               <select id="df-tipo">
                 <option value="custo">Custo operacional</option>
                 <option value="despesa_adm">Despesa administrativa</option>
@@ -330,8 +343,7 @@ tr:hover td{background:var(--surface2)}
             <div><label>Ano fim</label><input id="df-ano-fim" type="number" value="2026" min="2020" max="2040"/></div>
           </div>
           <div class="form-row cols2">
-            <div>
-              <label>Mês inicial</label>
+            <div><label>Mês inicial</label>
               <select id="df-mes-ini">
                 <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
                 <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
@@ -339,8 +351,7 @@ tr:hover td{background:var(--surface2)}
                 <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
               </select>
             </div>
-            <div>
-              <label>Mês final</label>
+            <div><label>Mês final</label>
               <select id="df-mes-fim">
                 <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
                 <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
@@ -416,19 +427,65 @@ tr:hover td{background:var(--surface2)}
       </div>
     </div>
 
+    <!-- CONFIGURAÇÕES -->
+    <div id="panel-configuracoes" class="panel">
+      <div class="grid2" style="align-items:start">
+        <div class="card">
+          <div class="card-title"><i class="ti ti-building"></i> Identidade da empresa</div>
+          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:14px">
+            <div>
+              <div id="logo-preview-wrap">
+                <div class="logo-placeholder" onclick="document.getElementById('logo-upload').click()">
+                  <i class="ti ti-photo" style="font-size:20px"></i>
+                  <span>Clique para<br>adicionar logo</span>
+                </div>
+              </div>
+              <input id="logo-upload" type="file" accept=".jpg,.jpeg,.png,.svg,.webp" style="display:none" onchange="previewLogo(this)"/>
+              <button class="btn sm" style="margin-top:6px;width:80px" onclick="document.getElementById('logo-upload').click()">
+                <i class="ti ti-upload"></i> Trocar
+              </button>
+            </div>
+            <div style="flex:1">
+              <label class="first">Nome da empresa</label>
+              <input id="cfg-nome" placeholder="Ex: Minha Empresa Ltda"/>
+              <label>Slogan / Descrição</label>
+              <input id="cfg-slogan" placeholder="Ex: Sistema de Gestão Financeira"/>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn primary" id="btn-salvar-cfg" onclick="salvarConfiguracoes()"><i class="ti ti-check"></i> Salvar configurações</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-eye"></i> Pré-visualização</div>
+          <div style="border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:var(--surface2)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <img id="cfg-preview-logo" style="height:36px;width:36px;border-radius:6px;object-fit:contain;border:1px solid var(--border);display:none"/>
+              <i class="ti ti-chart-bar" id="cfg-preview-icon" style="font-size:24px;color:var(--blue)"></i>
+              <div>
+                <div style="font-weight:700;font-size:14px;color:var(--blue)" id="cfg-preview-nome">DRE Gerencial</div>
+                <div style="font-size:11px;color:var(--text2)" id="cfg-preview-slogan">Sistema de Gestão Financeira</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text3)">Aparência na barra superior e na tela de login</div>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text2)">
+            <i class="ti ti-info-circle"></i> O logo é salvo no banco de dados e aparece para todos os usuários.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- USUÁRIOS -->
     <div id="panel-usuarios" class="panel">
       <div class="card" style="margin-bottom:14px">
-        <div class="card-title"><i class="ti ti-user-plus"></i> Convidar novo usuário</div>
-        <div class="info-box"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i>
-          O usuário receberá um e-mail de convite. Após confirmar, poderá acessar o sistema com a senha que definir.
-        </div>
+        <div class="card-title"><i class="ti ti-user-plus"></i> Criar novo usuário</div>
         <div class="form-row cols3">
           <div><label class="first">Nome</label><input id="u-nome" placeholder="Nome completo"/></div>
           <div><label class="first">E-mail</label><input id="u-email" type="email" placeholder="email@empresa.com"/></div>
           <div><label class="first">Perfil</label>
             <select id="u-role">
-              <option value="viewer">Visualizador (só DRE)</option>
+              <option value="viewer">Visualizador (só DRE e Fluxo)</option>
               <option value="admin">Administrador (acesso total)</option>
             </select>
           </div>
@@ -446,475 +503,364 @@ tr:hover td{background:var(--surface2)}
       </div>
     </div>
 
-  </div><!-- /content -->
-</div><!-- /app -->
+  </div>
+</div>
 
-<!-- MODAL DETALHAMENTO -->
+<!-- MODAIS -->
 <div class="overlay" id="modal-overlay" onclick="closeModal(event)">
-  <div class="modal">
-    <div class="modal-hd">
-      <h2 id="modal-title">Detalhamento</h2>
-      <button class="close-btn" onclick="closeModal(null,true)">×</button>
-    </div>
-    <div id="modal-content"></div>
-  </div>
+  <div class="modal"><div class="modal-hd"><h2 id="modal-title">Detalhamento</h2><button class="close-btn" onclick="closeModal(null,true)">×</button></div><div id="modal-content"></div></div>
 </div>
-
-<!-- MODAL RECIBO -->
 <div class="overlay" id="recibo-overlay" onclick="closeRecibo(event)">
-  <div class="modal" style="width:500px">
-    <div class="modal-hd">
-      <h2 id="recibo-title">Comprovante</h2>
-      <button class="close-btn" onclick="closeRecibo(null,true)">×</button>
-    </div>
-    <div id="recibo-content"></div>
-  </div>
+  <div class="modal" style="width:500px"><div class="modal-hd"><h2 id="recibo-title">Comprovante</h2><button class="close-btn" onclick="closeRecibo(null,true)">×</button></div><div id="recibo-content"></div></div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG SUPABASE ──────────────────────────────────────────────
-const SUPABASE_URL = 'https://kkjtadyyofcmmqaothki.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranRhZHl5b2ZjbW1xYW90aGtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0OTU4OTIsImV4cCI6MjA5ODA3MTg5Mn0.ioSHC03vE8kdjpTdR_tSXuGI0fX-hM8OCcm0t8P71zA';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+const SUPABASE_URL='https://kkjtadyyofcmmqaothki.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtranRhZHl5b2ZjbW1xYW90aGtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0OTU4OTIsImV4cCI6MjA5ODA3MTg5Mn0.ioSHC03vE8kdjpTdR_tSXuGI0fX-hM8OCcm0t8P71zA';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const MESES=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const TIPOS_LABEL={receita:'Receita',deducao:'Dedução',custo:'Custo operacional',despesa_com:'Desp. comercial',despesa_adm:'Desp. administrativa',fin_rec:'Receita financeira',fin_desp:'Despesa financeira'};
+let currentUser=null,currentRole=null,currentFileL=null,currentFileDf=null,logoBase64=null;
 
-let currentUser = null;
-let currentRole = null;
-let currentFileL = null;
-let currentFileDf = null;
-
-// ── INIT ─────────────────────────────────────────────────────────
-async function init() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    await loadUserRole(session.user);
-    showApp();
-  } else {
-    showAuth();
-  }
-  sb.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      await loadUserRole(session.user);
-      showApp();
-    } else if (event === 'SIGNED_OUT') {
-      showAuth();
-    }
+// INIT
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  await loadBranding();
+  if(session){await loadUserRole(session.user);showApp();}
+  else showAuth();
+  sb.auth.onAuthStateChange(async(event,session)=>{
+    if(event==='SIGNED_IN'&&session){await loadUserRole(session.user);showApp();}
+    else if(event==='SIGNED_OUT')showAuth();
   });
 }
 
-async function loadUserRole(user) {
-  currentUser = user;
-  const { data } = await sb.from('user_profiles').select('role,name').eq('id', user.id).single();
-  currentRole = data?.role || 'viewer';
-  const name = data?.name || user.email.split('@')[0];
-  document.getElementById('user-name').textContent = name;
-  document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
-  const rb = document.getElementById('role-badge');
-  rb.textContent = currentRole === 'admin' ? 'Administrador' : 'Visualizador';
-  rb.className = 'role-badge ' + (currentRole === 'admin' ? 'admin' : 'viewer');
-  // Show tabs based on role
-  if (currentRole === 'admin') {
-    ['tab-lancamentos','tab-recorrentes','tab-projecao','tab-usuarios'].forEach(id => {
-      document.getElementById(id).style.display = '';
+async function loadBranding(){
+  const{data}=await sb.from('configuracoes').select('*').eq('id',1).single();
+  if(!data)return;
+  const nome=data.nome_empresa||'DRE Gerencial';
+  const slogan=data.slogan||'Sistema de Gestão Financeira';
+  document.getElementById('auth-company-name').textContent=nome;
+  document.getElementById('topbar-company-name').textContent=nome;
+  if(data.logo_base64){
+    const aLogo=document.getElementById('auth-company-logo');
+    const tLogo=document.getElementById('topbar-logo-img');
+    aLogo.src=data.logo_base64;aLogo.style.display='block';
+    document.getElementById('auth-logo-icon').style.display='none';
+    tLogo.src=data.logo_base64;tLogo.style.display='block';
+    document.getElementById('topbar-logo-icon').style.display='none';
+  }
+}
+
+async function loadUserRole(user){
+  currentUser=user;
+  const{data}=await sb.from('user_profiles').select('role,name').eq('id',user.id).single();
+  currentRole=data?.role||'viewer';
+  const name=data?.name||user.email.split('@')[0];
+  document.getElementById('user-name').textContent=name;
+  document.getElementById('user-avatar').textContent=name.charAt(0).toUpperCase();
+  const rb=document.getElementById('role-badge');
+  rb.textContent=currentRole==='admin'?'Administrador':'Visualizador';
+  rb.className='role-badge '+(currentRole==='admin'?'admin':'viewer');
+  if(currentRole==='admin'){
+    ['tab-lancamentos','tab-recorrentes','tab-projecao','tab-configuracoes','tab-usuarios'].forEach(id=>document.getElementById(id).style.display='');
+    document.getElementById('dre-click-hint').innerHTML='<i class="ti ti-info-circle"></i> Clique em qualquer valor sublinhado para ver o detalhamento';
+  }
+}
+
+function showAuth(){document.getElementById('loading-screen').style.display='none';document.getElementById('auth-screen').style.display='flex';document.getElementById('app-screen').style.display='none';}
+function showApp(){document.getElementById('loading-screen').style.display='none';document.getElementById('auth-screen').style.display='none';document.getElementById('app-screen').style.display='block';renderDRE();}
+
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pwd=document.getElementById('login-password').value;
+  const btn=document.getElementById('login-btn');
+  const err=document.getElementById('auth-error');
+  err.style.display='none';btn.innerHTML='<span class="spinner"></span> Entrando...';btn.disabled=true;
+  const{error}=await sb.auth.signInWithPassword({email,password:pwd});
+  if(error){err.textContent='E-mail ou senha incorretos.';err.style.display='block';btn.innerHTML='<i class="ti ti-login"></i> Entrar';btn.disabled=false;}
+}
+async function doLogout(){await sb.auth.signOut();}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='dre')renderDRE();
+  if(t==='fluxo')renderFluxo();
+  if(t==='lancamentos')renderTabela();
+  if(t==='recorrentes')renderRecorrentes();
+  if(t==='projecao')renderProjecoes();
+  if(t==='configuracoes')loadConfiguracoes();
+  if(t==='usuarios')renderUsuarios();
+}
+
+function fmt(v){return'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtN(v){return(v<0?'-':'')+fmt(v);}
+function toast(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function showFileChip(input,chipId){const f=input.files[0]||null;if(chipId==='l-file-chip')currentFileL=f;else currentFileDf=f;document.getElementById(chipId).innerHTML=f?`<div class="file-chip"><i class="ti ti-paperclip"></i>${f.name}</div>`:''}
+async function uploadFile(file,folder){if(!file)return null;const ext=file.name.split('.').pop();const path=`${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;const{error}=await sb.storage.from('comprovantes').upload(path,file);if(error){toast('Erro ao enviar arquivo.');return null;}return path;}
+async function getFileUrl(path){if(!path)return null;const{data}=await sb.storage.from('comprovantes').createSignedUrl(path,3600);return data?.signedUrl||null;}
+
+// DADOS CONSOLIDADOS
+async function getAllData(ano){
+  const[{data:lanc},{data:rec},{data:proj}]=await Promise.all([
+    sb.from('lancamentos').select('tipo,valor,mes,ano,descricao,file_path').eq('ano',ano),
+    sb.from('despesas_recorrentes').select('tipo,valores_por_mes,descricao,file_path'),
+    sb.from('projecoes').select('tipo,valor,mes_ini,mes_fim,ano,descricao').eq('ano',ano)
+  ]);
+  const items=[...(lanc||[])];
+  (rec||[]).forEach(d=>{
+    Object.entries(d.valores_por_mes||{}).forEach(([key,v])=>{
+      if(!v)return;
+      const[a,m]=[parseInt(key.split('-')[0]),parseInt(key.split('-')[1])];
+      if(a===ano)items.push({tipo:d.tipo,valor:v,mes:m,ano:a,descricao:d.descricao,file_path:d.file_path,source:'recorrente'});
     });
-    document.getElementById('dre-click-hint').innerHTML = '<i class="ti ti-info-circle"></i> Clique em qualquer valor sublinhado para ver o detalhamento';
-  }
+  });
+  (proj||[]).forEach(p=>{
+    for(let m=p.mes_ini;m<=p.mes_fim;m++)
+      items.push({tipo:p.tipo,valor:p.valor,mes:m,ano:p.ano,descricao:p.descricao,source:'projecao'});
+  });
+  return items;
 }
 
-function showAuth() {
-  document.getElementById('loading-screen').style.display = 'none';
-  document.getElementById('auth-screen').style.display = 'flex';
-  document.getElementById('app-screen').style.display = 'none';
+// LANÇAMENTOS
+async function addLancamento(){
+  const tipo=document.getElementById('l-tipo').value;
+  const desc=document.getElementById('l-desc').value.trim();
+  const valor=parseFloat(document.getElementById('l-valor').value)||0;
+  const mes=parseInt(document.getElementById('l-mes').value);
+  const ano=parseInt(document.getElementById('l-ano').value)||2026;
+  if(!desc)return alert('Informe a descrição.');
+  if(!valor)return alert('Informe o valor.');
+  const btn=document.getElementById('btn-add-lanc');
+  btn.disabled=true;btn.innerHTML='<span class="spinner" style="border-top-color:var(--blue)"></span> Salvando...';
+  const filePath=await uploadFile(currentFileL,'lancamentos');
+  const{error}=await sb.from('lancamentos').insert({tipo,descricao:desc,valor,mes,ano,file_path:filePath,user_id:currentUser.id});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Adicionar';
+  if(error)return toast('Erro: '+error.message);
+  document.getElementById('l-desc').value='';document.getElementById('l-valor').value='';
+  document.getElementById('l-file-chip').innerHTML='';document.getElementById('l-file').value='';currentFileL=null;
+  toast('Lançamento salvo!');renderTabela();
 }
-function showApp() {
-  document.getElementById('loading-screen').style.display = 'none';
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app-screen').style.display = 'block';
-  loadAll();
-}
-
-// ── AUTH ─────────────────────────────────────────────────────────
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pwd = document.getElementById('login-password').value;
-  const btn = document.getElementById('login-btn');
-  const err = document.getElementById('auth-error');
-  err.style.display = 'none';
-  btn.innerHTML = '<span class="spinner"></span> Entrando...';
-  btn.disabled = true;
-  const { error } = await sb.auth.signInWithPassword({ email, password: pwd });
-  if (error) {
-    err.textContent = 'E-mail ou senha incorretos.';
-    err.style.display = 'block';
-    btn.innerHTML = '<i class="ti ti-login"></i> Entrar';
-    btn.disabled = false;
-  }
-}
-async function doLogout() {
-  await sb.auth.signOut();
-}
-
-// ── NAV ──────────────────────────────────────────────────────────
-function switchTab(t) {
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + t).classList.add('active');
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + t).classList.add('active');
-  if (t === 'dre') renderDRE();
-  if (t === 'lancamentos') renderTabela();
-  if (t === 'recorrentes') renderRecorrentes();
-  if (t === 'projecao') renderProjecoes();
-  if (t === 'usuarios') renderUsuarios();
-}
-
-// ── HELPERS ──────────────────────────────────────────────────────
-function fmt(v) { return 'R$ ' + Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-function fmtN(v) { return (v < 0 ? '-' : '') + fmt(v); }
-function toast(msg, dur=2500) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), dur);
-}
-function showFileChip(input, chipId) {
-  const f = input.files[0] || null;
-  if (chipId === 'l-file-chip') currentFileL = f;
-  else currentFileDf = f;
-  document.getElementById(chipId).innerHTML = f ? `<div class="file-chip"><i class="ti ti-paperclip"></i>${f.name}</div>` : '';
-}
-
-async function uploadFile(file, folder) {
-  if (!file) return null;
-  const ext = file.name.split('.').pop();
-  const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-  const { error } = await sb.storage.from('comprovantes').upload(path, file);
-  if (error) { toast('Erro ao enviar arquivo.'); return null; }
-  return path;
-}
-async function getFileUrl(path) {
-  if (!path) return null;
-  const { data } = await sb.storage.from('comprovantes').createSignedUrl(path, 3600);
-  return data?.signedUrl || null;
-}
-
-// ── LOAD ALL ─────────────────────────────────────────────────────
-async function loadAll() {
-  await renderDRE();
-}
-
-// ── LANÇAMENTOS ──────────────────────────────────────────────────
-async function addLancamento() {
-  const tipo = document.getElementById('l-tipo').value;
-  const desc = document.getElementById('l-desc').value.trim();
-  const valor = parseFloat(document.getElementById('l-valor').value) || 0;
-  const mes = parseInt(document.getElementById('l-mes').value);
-  const ano = parseInt(document.getElementById('l-ano').value) || 2026;
-  if (!desc) return alert('Informe a descrição.');
-  if (!valor) return alert('Informe o valor.');
-  const btn = document.getElementById('btn-add-lanc');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner" style="border-top-color:var(--blue)"></span> Salvando...';
-  const filePath = await uploadFile(currentFileL, 'lancamentos');
-  const { error } = await sb.from('lancamentos').insert({ tipo, descricao: desc, valor, mes, ano, file_path: filePath, user_id: currentUser.id });
-  btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Adicionar';
-  if (error) return toast('Erro ao salvar: ' + error.message);
-  document.getElementById('l-desc').value = '';
-  document.getElementById('l-valor').value = '';
-  document.getElementById('l-file-chip').innerHTML = '';
-  document.getElementById('l-file').value = '';
-  currentFileL = null;
-  toast('Lançamento salvo!');
-  renderTabela();
-}
-
-async function renderTabela() {
-  const fm = parseInt(document.getElementById('filter-mes').value);
-  const fa = parseInt(document.getElementById('filter-ano').value) || 2026;
-  let q = sb.from('lancamentos').select('*').eq('ano', fa).order('mes');
-  if (fm > 0) q = q.eq('mes', fm);
-  const { data, error } = await q;
-  const el = document.getElementById('tabela-lancamentos');
-  if (error || !data?.length) { el.innerHTML = '<div class="empty">Nenhum lançamento para este período.</div>'; updateSummary([]); return; }
-  el.innerHTML = `<table><thead><tr><th>Mês/Ano</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor</th><th>Recibo</th><th></th></tr></thead><tbody>` +
-    data.map(l => `<tr>
-      <td>${MESES[l.mes]}/${l.ano}</td>
-      <td><span class="badge ${l.tipo}">${TIPOS_LABEL[l.tipo]}</span></td>
-      <td>${l.descricao}</td>
-      <td class="num">${fmt(l.valor)}</td>
-      <td>${l.file_path ? `<button class="btn sm" onclick="verComprovante('${l.file_path}','${l.descricao}')"><i class="ti ti-paperclip"></i></button>` : '—'}</td>
-      <td><button class="btn danger" onclick="remLancamento('${l.id}')"><i class="ti ti-trash"></i></button></td>
-    </tr>`).join('') + '</tbody></table>';
+async function renderTabela(){
+  const fm=parseInt(document.getElementById('filter-mes').value);
+  const fa=parseInt(document.getElementById('filter-ano').value)||2026;
+  let q=sb.from('lancamentos').select('*').eq('ano',fa).order('mes');
+  if(fm>0)q=q.eq('mes',fm);
+  const{data,error}=await q;
+  const el=document.getElementById('tabela-lancamentos');
+  if(error||!data?.length){el.innerHTML='<div class="empty">Nenhum lançamento para este período.</div>';updateSummary([]);return;}
+  el.innerHTML=`<table><thead><tr><th>Mês/Ano</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor</th><th>Recibo</th><th></th></tr></thead><tbody>`+
+    data.map(l=>`<tr><td>${MESES[l.mes]}/${l.ano}</td><td><span class="badge ${l.tipo}">${TIPOS_LABEL[l.tipo]}</span></td><td>${l.descricao}</td><td class="num">${fmt(l.valor)}</td><td>${l.file_path?`<button class="btn sm" onclick="verComprovante('${l.file_path}','${l.descricao}')"><i class="ti ti-paperclip"></i></button>`:'—'}</td><td><button class="btn danger" onclick="remLancamento('${l.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('')+'</tbody></table>';
   updateSummary(data);
 }
-
-async function remLancamento(id) {
-  if (!confirm('Remover este lançamento?')) return;
-  await sb.from('lancamentos').delete().eq('id', id);
-  toast('Removido.'); renderTabela();
+async function remLancamento(id){if(!confirm('Remover?'))return;await sb.from('lancamentos').delete().eq('id',id);toast('Removido.');renderTabela();}
+function updateSummary(data){
+  const sum=t=>data.filter(i=>i.tipo===t).reduce((a,b)=>a+b.valor,0);
+  const rec=sum('receita'),ded=sum('deducao'),cus=sum('custo'),da=sum('despesa_adm')+sum('despesa_com'),fd=sum('fin_desp');
+  const lb=rec-ded-cus,res=lb-da-fd+sum('fin_rec');
+  document.getElementById('sum-rec').textContent=fmt(rec);
+  document.getElementById('sum-desp').textContent=fmt(cus+da+fd);
+  setMetric('sum-lb',lb);setMetric('sum-res',res);
 }
+function setMetric(id,v){const el=document.getElementById(id);el.textContent=fmtN(v);el.className='metric-value '+(v>=0?'pos':'neg');}
 
-function updateSummary(data) {
-  const sum = (tipo) => data.filter(i => i.tipo === tipo).reduce((a, b) => a + b.valor, 0);
-  const rec = sum('receita'); const ded = sum('deducao'); const cus = sum('custo');
-  const da = sum('despesa_adm') + sum('despesa_com'); const fd = sum('fin_desp');
-  const lb = rec - ded - cus; const res = lb - da - fd + sum('fin_rec');
-  document.getElementById('sum-rec').textContent = fmt(rec);
-  document.getElementById('sum-desp').textContent = fmt(cus + da + fd);
-  setMetric('sum-lb', lb); setMetric('sum-res', res);
+// RECORRENTES
+function toggleVariavel(){
+  const isVar=document.getElementById('df-natureza').value==='variavel';
+  document.getElementById('df-valor-fixo').style.display=isVar?'none':'block';
+  if(isVar)buildVariavelGrid();else document.getElementById('df-variaveis-area').style.display='none';
 }
-function setMetric(id, v) {
-  const el = document.getElementById(id);
-  el.textContent = fmtN(v);
-  el.className = 'metric-value ' + (v >= 0 ? 'pos' : 'neg');
-}
-
-// ── RECORRENTES ──────────────────────────────────────────────────
-function toggleVariavel() {
-  const isVar = document.getElementById('df-natureza').value === 'variavel';
-  document.getElementById('df-valor-fixo').style.display = isVar ? 'none' : 'block';
-  if (isVar) buildVariavelGrid();
-  else document.getElementById('df-variaveis-area').style.display = 'none';
-}
-
-function buildVariavelGrid() {
-  const ini = parseInt(document.getElementById('df-mes-ini').value);
-  const fim = parseInt(document.getElementById('df-mes-fim').value);
-  const anoIni = parseInt(document.getElementById('df-ano-ini').value) || 2026;
-  const anoFim = parseInt(document.getElementById('df-ano-fim').value) || 2026;
-  const grid = document.getElementById('df-variaveis-grid');
-  grid.innerHTML = '';
-  let m = ini, a = anoIni, count = 0;
-  while ((a < anoFim || (a === anoFim && m <= fim)) && count < 60) {
-    grid.innerHTML += `<div style="display:flex;align-items:center;gap:8px">
-      <label style="margin:0;min-width:95px;color:var(--text2);font-size:12px">${MESES[m].substring(0,3)}/${a}</label>
-      <input type="number" id="var-${a}-${m}" placeholder="0,00" min="0" step="0.01" style="margin:0"/>
-    </div>`;
-    m++; if (m > 12) { m = 1; a++; } count++;
+function buildVariavelGrid(){
+  const ini=parseInt(document.getElementById('df-mes-ini').value),fim=parseInt(document.getElementById('df-mes-fim').value);
+  const anoIni=parseInt(document.getElementById('df-ano-ini').value)||2026,anoFim=parseInt(document.getElementById('df-ano-fim').value)||2026;
+  const grid=document.getElementById('df-variaveis-grid');grid.innerHTML='';
+  let m=ini,a=anoIni,count=0;
+  while((a<anoFim||(a===anoFim&&m<=fim))&&count<60){
+    grid.innerHTML+=`<div style="display:flex;align-items:center;gap:8px"><label style="margin:0;min-width:95px;color:var(--text2);font-size:12px">${MESES[m].substring(0,3)}/${a}</label><input type="number" id="var-${a}-${m}" placeholder="0,00" min="0" step="0.01" style="margin:0"/></div>`;
+    m++;if(m>12){m=1;a++;}count++;
   }
-  document.getElementById('df-variaveis-area').style.display = 'block';
+  document.getElementById('df-variaveis-area').style.display='block';
 }
-
-['df-mes-ini','df-mes-fim','df-ano-ini','df-ano-fim'].forEach(id => {
-  document.addEventListener('change', e => {
-    if (e.target.id === id && document.getElementById('df-natureza').value === 'variavel') buildVariavelGrid();
-  });
+['df-mes-ini','df-mes-fim','df-ano-ini','df-ano-fim'].forEach(id=>{
+  document.addEventListener('change',e=>{if(e.target.id===id&&document.getElementById('df-natureza').value==='variavel')buildVariavelGrid();});
 });
-
-async function addDespesaFixa() {
-  const natureza = document.getElementById('df-natureza').value;
-  const tipo = document.getElementById('df-tipo').value;
-  const desc = document.getElementById('df-desc').value.trim();
-  const mesIni = parseInt(document.getElementById('df-mes-ini').value);
-  const mesFim = parseInt(document.getElementById('df-mes-fim').value);
-  const anoIni = parseInt(document.getElementById('df-ano-ini').value) || 2026;
-  const anoFim = parseInt(document.getElementById('df-ano-fim').value) || 2026;
-  if (!desc) return alert('Informe a descrição.');
-  let valoresPorMes = {};
-  if (natureza === 'fixa') {
-    const v = parseFloat(document.getElementById('df-valor').value) || 0;
-    if (!v) return alert('Informe o valor mensal.');
-    let m = mesIni, a = anoIni, c = 0;
-    while ((a < anoFim || (a === anoFim && m <= mesFim)) && c < 120) {
-      valoresPorMes[`${a}-${m}`] = v; m++; if (m > 12) { m = 1; a++; } c++;
+async function addDespesaFixa(){
+  const natureza=document.getElementById('df-natureza').value,tipo=document.getElementById('df-tipo').value;
+  const desc=document.getElementById('df-desc').value.trim();
+  const mesIni=parseInt(document.getElementById('df-mes-ini').value),mesFim=parseInt(document.getElementById('df-mes-fim').value);
+  const anoIni=parseInt(document.getElementById('df-ano-ini').value)||2026,anoFim=parseInt(document.getElementById('df-ano-fim').value)||2026;
+  if(!desc)return alert('Informe a descrição.');
+  let valoresPorMes={};
+  if(natureza==='fixa'){
+    const v=parseFloat(document.getElementById('df-valor').value)||0;
+    if(!v)return alert('Informe o valor.');
+    let m=mesIni,a=anoIni,c=0;
+    while((a<anoFim||(a===anoFim&&m<=mesFim))&&c<120){valoresPorMes[`${a}-${m}`]=v;m++;if(m>12){m=1;a++;}c++;}
+  }else{
+    let m=mesIni,a=anoIni,c=0;
+    while((a<anoFim||(a===anoFim&&m<=mesFim))&&c<120){
+      const v=parseFloat(document.getElementById(`var-${a}-${m}`)?.value)||0;
+      valoresPorMes[`${a}-${m}`]=v;m++;if(m>12){m=1;a++;}c++;
     }
-  } else {
-    let m = mesIni, a = anoIni, c = 0;
-    while ((a < anoFim || (a === anoFim && m <= mesFim)) && c < 120) {
-      const v = parseFloat(document.getElementById(`var-${a}-${m}`)?.value) || 0;
-      valoresPorMes[`${a}-${m}`] = v; m++; if (m > 12) { m = 1; a++; } c++;
-    }
-    if (Object.values(valoresPorMes).every(v => v === 0)) return alert('Informe ao menos um valor.');
+    if(Object.values(valoresPorMes).every(v=>v===0))return alert('Informe ao menos um valor.');
   }
-  const btn = document.getElementById('btn-add-df');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner" style="border-top-color:var(--blue)"></span> Salvando...';
-  const filePath = await uploadFile(currentFileDf, 'recorrentes');
-  const total = Object.values(valoresPorMes).reduce((a, b) => a + b, 0);
-  const parcelas = Object.keys(valoresPorMes).length;
-  const { error } = await sb.from('despesas_recorrentes').insert({
-    natureza, tipo, descricao: desc, mes_ini: mesIni, mes_fim: mesFim, ano_ini: anoIni, ano_fim: anoFim,
-    valores_por_mes: valoresPorMes, total, parcelas, file_path: filePath, user_id: currentUser.id
-  });
-  btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Adicionar';
-  if (error) return toast('Erro: ' + error.message);
-  document.getElementById('df-desc').value = ''; document.getElementById('df-valor').value = '';
-  document.getElementById('df-file-chip').innerHTML = ''; document.getElementById('df-file').value = '';
-  document.getElementById('df-variaveis-area').style.display = 'none';
-  document.getElementById('df-natureza').value = 'fixa';
-  document.getElementById('df-valor-fixo').style.display = 'block';
-  currentFileDf = null;
-  toast('Despesa recorrente salva!'); renderRecorrentes();
+  const btn=document.getElementById('btn-add-df');btn.disabled=true;btn.innerHTML='<span class="spinner" style="border-top-color:var(--blue)"></span> Salvando...';
+  const filePath=await uploadFile(currentFileDf,'recorrentes');
+  const total=Object.values(valoresPorMes).reduce((a,b)=>a+b,0),parcelas=Object.keys(valoresPorMes).length;
+  const{error}=await sb.from('despesas_recorrentes').insert({natureza,tipo,descricao:desc,mes_ini:mesIni,mes_fim:mesFim,ano_ini:anoIni,ano_fim:anoFim,valores_por_mes:valoresPorMes,total,parcelas,file_path:filePath,user_id:currentUser.id});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Adicionar';
+  if(error)return toast('Erro: '+error.message);
+  document.getElementById('df-desc').value='';document.getElementById('df-valor').value='';
+  document.getElementById('df-file-chip').innerHTML='';document.getElementById('df-file').value='';
+  document.getElementById('df-variaveis-area').style.display='none';
+  document.getElementById('df-natureza').value='fixa';document.getElementById('df-valor-fixo').style.display='block';
+  currentFileDf=null;toast('Despesa recorrente salva!');renderRecorrentes();
 }
-
-async function renderRecorrentes() {
-  const { data } = await sb.from('despesas_recorrentes').select('*').order('created_at', { ascending: false });
-  const el = document.getElementById('tabela-recorrentes');
-  if (!data?.length) { el.innerHTML = '<div class="empty">Nenhuma despesa recorrente.</div>'; return; }
-  el.innerHTML = `<table style="font-size:12px"><thead><tr>
-    <th>Natureza</th><th>Categoria</th><th>Descrição</th><th>Período</th><th style="text-align:right">Total</th><th>Doc</th><th></th>
-  </tr></thead><tbody>` +
-    data.map(d => `<tr>
-      <td><span class="badge ${d.natureza}">${d.natureza === 'fixa' ? 'Fixa' : 'Variável'}</span></td>
-      <td><span class="badge ${d.tipo}">${TIPOS_LABEL[d.tipo]}</span></td>
-      <td>${d.descricao}<br><span style="color:var(--text3);font-size:10px">${d.parcelas} parcela${d.parcelas > 1 ? 's' : ''}</span></td>
-      <td style="white-space:nowrap">${MESES[d.mes_ini].substring(0,3)}/${d.ano_ini} → ${MESES[d.mes_fim].substring(0,3)}/${d.ano_fim}</td>
-      <td class="num">${fmt(d.total)}</td>
-      <td>${d.file_path ? `<button class="btn sm" onclick="verComprovante('${d.file_path}','${d.descricao}')"><i class="ti ti-paperclip"></i></button>` : '—'}</td>
-      <td><button class="btn danger" onclick="remRecorrente('${d.id}')"><i class="ti ti-trash"></i></button></td>
-    </tr>`).join('') + '</tbody></table>';
+async function renderRecorrentes(){
+  const{data}=await sb.from('despesas_recorrentes').select('*').order('created_at',{ascending:false});
+  const el=document.getElementById('tabela-recorrentes');
+  if(!data?.length){el.innerHTML='<div class="empty">Nenhuma despesa recorrente.</div>';return;}
+  el.innerHTML=`<table style="font-size:12px"><thead><tr><th>Natureza</th><th>Categoria</th><th>Descrição</th><th>Período</th><th style="text-align:right">Total</th><th>Doc</th><th></th></tr></thead><tbody>`+
+    data.map(d=>`<tr><td><span class="badge ${d.natureza}">${d.natureza==='fixa'?'Fixa':'Variável'}</span></td><td><span class="badge ${d.tipo}">${TIPOS_LABEL[d.tipo]}</span></td><td>${d.descricao}<br><span style="color:var(--text3);font-size:10px">${d.parcelas} parcela${d.parcelas>1?'s':''}</span></td><td style="white-space:nowrap">${MESES[d.mes_ini].substring(0,3)}/${d.ano_ini} → ${MESES[d.mes_fim].substring(0,3)}/${d.ano_fim}</td><td class="num">${fmt(d.total)}</td><td>${d.file_path?`<button class="btn sm" onclick="verComprovante('${d.file_path}','${d.descricao}')"><i class="ti ti-paperclip"></i></button>`:'—'}</td><td><button class="btn danger" onclick="remRecorrente('${d.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('')+'</tbody></table>';
 }
+async function remRecorrente(id){if(!confirm('Remover?'))return;await sb.from('despesas_recorrentes').delete().eq('id',id);toast('Removida.');renderRecorrentes();}
 
-async function remRecorrente(id) {
-  if (!confirm('Remover esta despesa recorrente?')) return;
-  await sb.from('despesas_recorrentes').delete().eq('id', id);
-  toast('Removida.'); renderRecorrentes();
+// PROJEÇÕES
+async function addProjecao(){
+  const desc=document.getElementById('p-desc').value.trim(),tipo=document.getElementById('p-tipo').value;
+  const valor=parseFloat(document.getElementById('p-valor').value)||0;
+  const mesIni=parseInt(document.getElementById('p-mes-ini').value),mesFim=parseInt(document.getElementById('p-mes-fim').value);
+  const ano=parseInt(document.getElementById('p-ano').value)||2026;
+  if(!desc||!valor)return alert('Preencha descrição e valor.');
+  const btn=document.getElementById('btn-add-proj');btn.disabled=true;
+  const{error}=await sb.from('projecoes').insert({tipo,descricao:desc,valor,mes_ini:mesIni,mes_fim:mesFim,ano,user_id:currentUser.id});
+  btn.disabled=false;if(error)return toast('Erro: '+error.message);
+  document.getElementById('p-desc').value='';document.getElementById('p-valor').value='';
+  toast('Projeção salva!');renderProjecoes();
 }
-
-// ── PROJEÇÕES ────────────────────────────────────────────────────
-async function addProjecao() {
-  const desc = document.getElementById('p-desc').value.trim();
-  const tipo = document.getElementById('p-tipo').value;
-  const valor = parseFloat(document.getElementById('p-valor').value) || 0;
-  const mesIni = parseInt(document.getElementById('p-mes-ini').value);
-  const mesFim = parseInt(document.getElementById('p-mes-fim').value);
-  const ano = parseInt(document.getElementById('p-ano').value) || 2026;
-  if (!desc || !valor) return alert('Preencha descrição e valor.');
-  const btn = document.getElementById('btn-add-proj');
-  btn.disabled = true;
-  const { error } = await sb.from('projecoes').insert({ tipo, descricao: desc, valor, mes_ini: mesIni, mes_fim: mesFim, ano, user_id: currentUser.id });
-  btn.disabled = false;
-  if (error) return toast('Erro: ' + error.message);
-  document.getElementById('p-desc').value = ''; document.getElementById('p-valor').value = '';
-  toast('Projeção salva!'); renderProjecoes();
+async function renderProjecoes(){
+  const{data}=await sb.from('projecoes').select('*').order('created_at',{ascending:false});
+  const el=document.getElementById('tabela-projecoes');
+  if(!data?.length){el.innerHTML='<div class="empty">Nenhuma projeção.</div>';return;}
+  el.innerHTML=`<table><thead><tr><th>Período</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor/mês</th><th></th></tr></thead><tbody>`+
+    data.map(p=>`<tr><td>${MESES[p.mes_ini].substring(0,3)}${p.mes_ini!==p.mes_fim?' → '+MESES[p.mes_fim].substring(0,3):''} ${p.ano}</td><td><span class="badge ${p.tipo}">${TIPOS_LABEL[p.tipo]}</span></td><td>${p.descricao}</td><td class="num">${fmt(p.valor)}</td><td><button class="btn danger" onclick="remProjecao('${p.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('')+'</tbody></table>';
 }
+async function remProjecao(id){if(!confirm('Remover?'))return;await sb.from('projecoes').delete().eq('id',id);toast('Removida.');renderProjecoes();}
 
-async function renderProjecoes() {
-  const { data } = await sb.from('projecoes').select('*').order('created_at', { ascending: false });
-  const el = document.getElementById('tabela-projecoes');
-  if (!data?.length) { el.innerHTML = '<div class="empty">Nenhuma projeção.</div>'; return; }
-  el.innerHTML = `<table><thead><tr><th>Período</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor/mês</th><th></th></tr></thead><tbody>` +
-    data.map(p => `<tr>
-      <td>${MESES[p.mes_ini].substring(0,3)}${p.mes_ini !== p.mes_fim ? ' → ' + MESES[p.mes_fim].substring(0,3) : ''} ${p.ano}</td>
-      <td><span class="badge ${p.tipo}">${TIPOS_LABEL[p.tipo]}</span></td>
-      <td>${p.descricao}</td>
-      <td class="num">${fmt(p.valor)}</td>
-      <td><button class="btn danger" onclick="remProjecao('${p.id}')"><i class="ti ti-trash"></i></button></td>
-    </tr>`).join('') + '</tbody></table>';
-}
-
-async function remProjecao(id) {
-  if (!confirm('Remover esta projeção?')) return;
-  await sb.from('projecoes').delete().eq('id', id);
-  toast('Removida.'); renderProjecoes();
-}
-
-// ── DRE ──────────────────────────────────────────────────────────
-async function renderDRE() {
-  const mes = parseInt(document.getElementById('dre-mes').value);
-  const ano = parseInt(document.getElementById('dre-ano').value) || 2026;
-  document.getElementById('dre-content').innerHTML = '<div class="empty">Carregando...</div>';
-
-  // Lançamentos
-  let lq = sb.from('lancamentos').select('tipo,valor,mes,ano').eq('ano', ano);
-  if (mes > 0) lq = lq.eq('mes', mes);
-  const { data: lanc } = await lq;
-
-  // Recorrentes
-  const { data: rec } = await sb.from('despesas_recorrentes').select('tipo,valores_por_mes,ano_ini,ano_fim,mes_ini,mes_fim');
-  const recItems = [];
-  (rec || []).forEach(d => {
-    Object.entries(d.valores_por_mes || {}).forEach(([key, v]) => {
-      if (!v) return;
-      const [a, m] = [parseInt(key.split('-')[0]), parseInt(key.split('-')[1])];
-      if (a === ano && (mes === 0 || m === mes)) recItems.push({ tipo: d.tipo, valor: v, mes: m, ano: a });
-    });
-  });
-
-  // Projeções
-  let pq = sb.from('projecoes').select('tipo,valor,mes_ini,mes_fim,ano').eq('ano', ano);
-  const { data: proj } = await pq;
-  const projItems = [];
-  (proj || []).forEach(p => {
-    for (let m = p.mes_ini; m <= p.mes_fim; m++) {
-      if (mes === 0 || m === mes) projItems.push({ tipo: p.tipo, valor: p.valor, mes: m, ano: p.ano });
-    }
-  });
-
-  const all = [...(lanc || []), ...recItems, ...projItems];
-  const sum = (tipo) => all.filter(i => i.tipo === tipo).reduce((a, b) => a + b.valor, 0);
-
-  const recVal = sum('receita'); const ded = sum('deducao'); const recLiq = recVal - ded;
-  const cus = sum('custo'); const lb = recLiq - cus;
-  const dc = sum('despesa_com'); const da = sum('despesa_adm'); const lop = lb - dc - da;
-  const fr = sum('fin_rec'); const fd = sum('fin_desp'); const res = lop + fr - fd;
-  const label = mes === 0 ? `Acumulado ${ano}` : MESES[mes] + '/' + ano;
-  const isAdmin = currentRole === 'admin';
-
-  const N = (v, tipo) => {
-    const cls = v >= 0 ? 'pos' : 'neg';
-    const click = isAdmin && tipo ? `class="num ${cls} clickable" onclick="openDetail('${tipo}',${mes},${ano})" title="Ver detalhamento"` : `class="num ${cls}"`;
-    return `<span ${click}>${fmtN(v)}</span>`;
-  };
-  const R = (lbl, v, cls, tipo, indent) =>
-    `<tr class="${cls}"><td style="padding-left:${indent || 8}px">${lbl}</td><td>${N(v, tipo)}</td></tr>`;
-
-  document.getElementById('dre-content').innerHTML = `
+// DRE
+async function renderDRE(){
+  const mes=parseInt(document.getElementById('dre-mes').value);
+  const ano=parseInt(document.getElementById('dre-ano').value)||2026;
+  document.getElementById('dre-content').innerHTML='<div class="empty">Carregando...</div>';
+  const all=(await getAllData(ano)).filter(i=>mes===0||i.mes===mes);
+  const sum=t=>all.filter(i=>i.tipo===t).reduce((a,b)=>a+b.valor,0);
+  const recVal=sum('receita'),ded=sum('deducao'),recLiq=recVal-ded;
+  const cus=sum('custo'),lb=recLiq-cus;
+  const dc=sum('despesa_com'),da=sum('despesa_adm'),lop=lb-dc-da;
+  const fr=sum('fin_rec'),fd=sum('fin_desp'),res=lop+fr-fd;
+  const label=mes===0?`Acumulado ${ano}`:MESES[mes]+'/'+ano;
+  const isAdmin=currentRole==='admin';
+  const N=(v,tipo)=>{const cls=v>=0?'pos':'neg';const click=isAdmin&&tipo?`class="num ${cls} clickable" onclick="openDetail('${tipo}',${mes},${ano})" title="Ver detalhamento"`:`class="num ${cls}"`;return`<span ${click}>${fmtN(v)}</span>`;};
+  const R=(lbl,v,cls,tipo,indent)=>`<tr class="${cls}"><td style="padding-left:${indent||8}px">${lbl}</td><td>${N(v,tipo)}</td></tr>`;
+  document.getElementById('dre-content').innerHTML=`
   <div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:600">${label}</div>
-  <table class="dre-tbl">
-  <thead><tr><th>Categoria</th><th style="width:200px">${label}</th></tr></thead>
-  <tbody>
-  ${R('Receitas operacionais', recVal, 'grp', 'receita', 8)}
-  ${R('Receita de vendas', recVal, 'sub', 'receita', 28)}
+  <table class="dre-tbl"><thead><tr><th>Categoria</th><th style="width:200px">${label}</th></tr></thead><tbody>
+  ${R('Receitas operacionais',recVal,'grp','receita',8)}${R('Receita de vendas',recVal,'sub','receita',28)}
   <tr class="spacer"><td colspan="2"></td></tr>
-  ${R('(−) Deduções da receita bruta', -ded, 'grp', 'deducao', 8)}
-  ${R('Descontos e devoluções', -ded, 'sub', 'deducao', 28)}
-  <tr class="subtotal"><td style="padding-left:8px">Receita líquida de vendas</td><td>${N(recLiq, null)}</td></tr>
+  ${R('(−) Deduções da receita bruta',-ded,'grp','deducao',8)}${R('Descontos e devoluções',-ded,'sub','deducao',28)}
+  <tr class="subtotal"><td style="padding-left:8px">Receita líquida de vendas</td><td>${N(recLiq,null)}</td></tr>
   <tr class="spacer"><td colspan="2"></td></tr>
-  ${R('(−) Custos operacionais', -cus, 'grp', 'custo', 8)}
-  ${R('Custo das vendas / produtos', -cus, 'sub', 'custo', 28)}
-  <tr class="subtotal"><td style="padding-left:8px">Lucro bruto</td><td>${N(lb, null)}</td></tr>
+  ${R('(−) Custos operacionais',-cus,'grp','custo',8)}${R('Custo das vendas / produtos',-cus,'sub','custo',28)}
+  <tr class="subtotal"><td style="padding-left:8px">Lucro bruto</td><td>${N(lb,null)}</td></tr>
   <tr class="spacer"><td colspan="2"></td></tr>
-  ${R('(−) Despesas operacionais', -(dc + da), 'grp', null, 8)}
-  ${R('Despesas comerciais', -dc, 'sub', 'despesa_com', 28)}
-  ${R('Despesas administrativas', -da, 'sub', 'despesa_adm', 28)}
-  <tr class="subtotal"><td style="padding-left:8px">Lucro / Prejuízo operacional</td><td>${N(lop, null)}</td></tr>
+  ${R('(−) Despesas operacionais',-(dc+da),'grp',null,8)}${R('Despesas comerciais',-dc,'sub','despesa_com',28)}${R('Despesas administrativas',-da,'sub','despesa_adm',28)}
+  <tr class="subtotal"><td style="padding-left:8px">Lucro / Prejuízo operacional</td><td>${N(lop,null)}</td></tr>
   <tr class="spacer"><td colspan="2"></td></tr>
-  ${R('Receitas financeiras', fr, 'grp', 'fin_rec', 8)}
-  ${R('(−) Despesas financeiras', -fd, 'grp', 'fin_desp', 8)}
-  <tr class="grand"><td style="padding-left:8px">Resultado líquido do exercício</td><td>${N(res, null)}</td></tr>
+  ${R('Receitas financeiras',fr,'grp','fin_rec',8)}${R('(−) Despesas financeiras',-fd,'grp','fin_desp',8)}
+  <tr class="grand"><td style="padding-left:8px">Resultado líquido do exercício</td><td>${N(res,null)}</td></tr>
   </tbody></table>`;
 }
 
-async function openDetail(tipo, mes, ano) {
-  const all = [];
-  let lq = sb.from('lancamentos').select('descricao,valor,mes,ano').eq('tipo', tipo).eq('ano', ano);
-  if (mes > 0) lq = lq.eq('mes', mes);
-  const { data: lanc } = await lq;
-  (lanc || []).forEach(i => all.push({ descricao: i.descricao, valor: i.valor, mes: i.mes, ano: i.ano, file_path: i.file_path, source: 'Avulso' }));
+// FLUXO DE CAIXA POR COMPETÊNCIA
+async function renderFluxo(){
+  const ano=parseInt(document.getElementById('fc-ano').value)||2026;
+  document.getElementById('fluxo-content').innerHTML='<div class="empty">Carregando...</div>';
+  const all=await getAllData(ano);
 
-  const { data: rec } = await sb.from('despesas_recorrentes').select('desc,tipo,valores_por_mes,file_path').eq('tipo', tipo);
-  (rec || []).forEach(d => {
-    Object.entries(d.valores_por_mes || {}).forEach(([key, v]) => {
-      if (!v) return;
-      const [a, m] = [parseInt(key.split('-')[0]), parseInt(key.split('-')[1])];
-      if (a === ano && (mes === 0 || m === mes)) all.push({ desc: d.desc, valor: v, mes: m, ano: a, source: 'Recorrente', file_path: d.file_path });
-    });
-  });
+  // Agrupar por mês
+  const porMes={};
+  for(let m=1;m<=12;m++){
+    const items=all.filter(i=>i.mes===m);
+    const sum=t=>items.filter(i=>i.tipo===t).reduce((a,b)=>a+b.valor,0);
+    const rec=sum('receita'),ded=sum('deducao'),recLiq=rec-ded;
+    const cus=sum('custo'),lb=recLiq-cus;
+    const dc=sum('despesa_com'),da=sum('despesa_adm'),desp=dc+da;
+    const lop=lb-desp;
+    const fr=sum('fin_rec'),fd=sum('fin_desp'),res=lop+fr-fd;
+    porMes[m]={rec,ded,recLiq,cus,lb,dc,da,desp,lop,fr,fd,res};
+  }
 
-  const { data: proj } = await sb.from('projecoes').select('desc,valor,mes_ini,mes_fim,ano').eq('tipo', tipo).eq('ano', ano);
-  (proj || []).forEach(p => {
-    for (let m = p.mes_ini; m <= p.mes_fim; m++) {
-      if (mes === 0 || m === mes) all.push({ desc: p.desc, valor: p.valor, mes: m, ano: p.ano, source: 'Projeção' });
-    }
-  });
+  // Saldo acumulado
+  let acum=0;
+  const acums={};
+  for(let m=1;m<=12;m++){acum+=porMes[m].res;acums[m]=acum;}
 
-  const label = mes === 0 ? `Acumulado ${ano}` : MESES[mes] + '/' + ano;
-  document.getElementById('modal-title').textContent = TIPOS_LABEL[tipo] + ' — ' + label;
-  const total = all.reduce((a, b) => a + b.valor, 0);
-  document.getElementById('modal-content').innerHTML = !all.length
-    ? '<div class="empty">Sem lançamentos nesta categoria.</div>'
-    : `<table style="width:100%;border-collapse:collapse;font-size:13px">
+  const cols=Array.from({length:12},(_,i)=>i+1);
+  const fcN=(v,m)=>{if(v===0)return`<span style="color:var(--text3)">—</span>`;const cls=v>=0?'fc-col-pos':'fc-col-neg';return`<span class="${cls}">${fmtN(v)}</span>`;};
+
+  const rows=[
+    {label:'ENTRADAS',cls:'fc-grp',key:null},
+    {label:'Receita operacional',cls:'fc-sub',key:'rec'},
+    {label:'(−) Deduções',cls:'fc-sub',key:'ded',neg:true},
+    {label:'Receita líquida',cls:'fc-total',key:'recLiq'},
+    {label:'SAÍDAS OPERACIONAIS',cls:'fc-grp',key:null},
+    {label:'(−) Custos operacionais',cls:'fc-sub',key:'cus',neg:true},
+    {label:'(−) Despesas comerciais',cls:'fc-sub',key:'dc',neg:true},
+    {label:'(−) Despesas administrativas',cls:'fc-sub',key:'da',neg:true},
+    {label:'Total saídas operacionais',cls:'fc-total',key:'desp',neg:true},
+    {label:'RESULTADO OPERACIONAL',cls:'fc-total',key:'lop'},
+    {label:'FINANCEIRO',cls:'fc-grp',key:null},
+    {label:'Receitas financeiras',cls:'fc-sub',key:'fr'},
+    {label:'(−) Despesas financeiras',cls:'fc-sub',key:'fd',neg:true},
+  ];
+
+  const thead=`<tr><th style="text-align:left;position:sticky;left:0;background:#fff;min-width:180px">Categoria</th>${cols.map(m=>`<th>${MESES[m].substring(0,3)}</th>`).join('')}<th>Total</th></tr>`;
+  const tbody=rows.map(r=>{
+    if(!r.key)return`<tr class="${r.cls}"><td>${r.label}</td>${cols.map(()=>'<td></td>').join('')}<td></td></tr>`;
+    const total=cols.reduce((s,m)=>s+(porMes[m][r.key]||0),0);
+    const displayVal=(v,m)=>r.neg?fcN(-Math.abs(v),m):fcN(v,m);
+    return`<tr class="${r.cls}"><td>${r.label}</td>${cols.map(m=>`<td>${displayVal(porMes[m][r.key],m)}</td>`).join('')}<td>${r.neg?fcN(-Math.abs(total),0):fcN(total,0)}</td></tr>`;
+  }).join('');
+
+  const totalAnual=cols.reduce((s,m)=>s+porMes[m].res,0);
+  const saldoRow=`<tr class="fc-saldo"><td>SALDO DO PERÍODO</td>${cols.map(m=>`<td>${fcN(porMes[m].res,m)}</td>`).join('')}<td>${fcN(totalAnual,0)}</td></tr>`;
+  const acumRow=`<tr class="fc-acum"><td>Saldo acumulado</td>${cols.map(m=>`<td>${fcN(acums[m],m)}</td>`).join('')}<td></td></tr>`;
+
+  document.getElementById('fluxo-content').innerHTML=`<table class="fc-tbl"><thead>${thead}</thead><tbody>${tbody}${saldoRow}${acumRow}</tbody></table>`;
+
+  // Resumo anual cards
+  const recTotal=cols.reduce((s,m)=>s+porMes[m].rec,0);
+  const despTotal=cols.reduce((s,m)=>s+porMes[m].desp+porMes[m].cus,0);
+  const melhorMes=cols.reduce((best,m)=>porMes[m].res>porMes[best].res?m:best,1);
+  document.getElementById('fc-resumo').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Total entradas ${ano}</div><div class="metric-value pos">${fmt(recTotal)}</div></div>
+    <div class="metric-card"><div class="metric-label">Total saídas ${ano}</div><div class="metric-value neg">${fmt(despTotal)}</div></div>
+    <div class="metric-card"><div class="metric-label">Resultado anual</div><div class="metric-value ${totalAnual>=0?'pos':'neg'}">${fmtN(totalAnual)}</div></div>
+    <div class="metric-card"><div class="metric-label">Melhor mês</div><div class="metric-value" style="font-size:16px">${MESES[melhorMes]} ${fcN(porMes[melhorMes].res,melhorMes)}</div></div>`;
+}
+
+// DETALHAMENTO DRE
+async function openDetail(tipo,mes,ano){
+  const all=(await getAllData(ano)).filter(i=>i.tipo===tipo&&(mes===0||i.mes===mes));
+  const label=mes===0?`Acumulado ${ano}`:MESES[mes]+'/'+ano;
+  document.getElementById('modal-title').textContent=TIPOS_LABEL[tipo]+' — '+label;
+  const total=all.reduce((a,b)=>a+b.valor,0);
+  document.getElementById('modal-content').innerHTML=!all.length
+    ?'<div class="empty">Sem lançamentos nesta categoria.</div>'
+    :`<table style="width:100%;border-collapse:collapse;font-size:13px">
       <thead><tr style="border-bottom:1px solid var(--border)">
         <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Mês/Ano</th>
         <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Descrição</th>
@@ -922,87 +868,107 @@ async function openDetail(tipo, mes, ano) {
         <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--text2)">Valor</th>
         <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Doc</th>
       </tr></thead><tbody>
-      ${all.map(i => `<tr style="border-bottom:1px solid var(--border)">
+      ${all.map(i=>`<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:6px 8px">${MESES[i.mes]}/${i.ano}</td>
-        <td style="padding:6px 8px">${i.descricao}</td>
-        <td style="padding:6px 8px"><span class="badge proj">${i.source}</span></td>
+        <td style="padding:6px 8px">${i.descricao||'—'}</td>
+        <td style="padding:6px 8px"><span class="badge proj">${i.source||'Avulso'}</span></td>
         <td style="padding:6px 8px" class="num">${fmt(i.valor)}</td>
-        <td style="padding:6px 8px">${i.file_path ? `<button class="btn sm" onclick="verComprovante('${i.file_path}','${i.descricao}')"><i class="ti ti-paperclip"></i></button>` : '—'}</td>
+        <td style="padding:6px 8px">${i.file_path?`<button class="btn sm" onclick="verComprovante('${i.file_path}','${i.descricao||''}')"><i class="ti ti-paperclip"></i></button>`:'—'}</td>
       </tr>`).join('')}
-      <tr style="font-weight:700;background:var(--surface2)">
-        <td colspan="3" style="padding:7px 8px">Total</td>
-        <td style="padding:7px 8px" class="num">${fmt(total)}</td><td></td>
-      </tr></tbody></table>`;
+      <tr style="font-weight:700;background:var(--surface2)"><td colspan="3" style="padding:7px 8px">Total</td><td style="padding:7px 8px" class="num">${fmt(total)}</td><td></td></tr>
+      </tbody></table>`;
   document.getElementById('modal-overlay').classList.add('open');
 }
 
-async function verComprovante(path, name) {
-  const url = await getFileUrl(path);
-  if (!url) return toast('Arquivo não encontrado.');
-  document.getElementById('recibo-title').textContent = name || 'Comprovante';
-  const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(path);
-  document.getElementById('recibo-content').innerHTML = isImg
-    ? `<img src="${url}" style="width:100%;border-radius:6px"/>`
-    : `<embed src="${url}" type="application/pdf" width="100%" height="430px" style="border-radius:6px"/>`;
+async function verComprovante(path,name){
+  const url=await getFileUrl(path);
+  if(!url)return toast('Arquivo não encontrado.');
+  document.getElementById('recibo-title').textContent=name||'Comprovante';
+  const isImg=/\.(jpg|jpeg|png|gif|webp)$/i.test(path);
+  document.getElementById('recibo-content').innerHTML=isImg?`<img src="${url}" style="width:100%;border-radius:6px"/>`:`<embed src="${url}" type="application/pdf" width="100%" height="430px" style="border-radius:6px"/>`;
   document.getElementById('recibo-overlay').classList.add('open');
 }
 
-// ── USUÁRIOS ─────────────────────────────────────────────────────
-async function addUsuario() {
-  const nome = document.getElementById('u-nome').value.trim();
-  const email = document.getElementById('u-email').value.trim();
-  const role = document.getElementById('u-role').value;
-  const senha = document.getElementById('u-senha').value;
-  if (!nome || !email || !senha) return alert('Preencha nome, e-mail e senha.');
-  if (senha.length < 6) return alert('Senha mínima de 6 caracteres.');
-  const btn = document.getElementById('btn-add-user');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner" style="border-top-color:var(--blue)"></span> Criando...';
-  // Create user via admin API through edge function or direct sign up
-  const { data, error } = await sb.auth.signUp({ email, password: senha, options: { data: { name: nome } } });
-  if (error) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-user-plus"></i> Criar usuário'; return toast('Erro: ' + error.message); }
-  if (data.user) {
-    await sb.from('user_profiles').upsert({ id: data.user.id, name: nome, email, role });
+// CONFIGURAÇÕES / LOGO
+function previewLogo(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    logoBase64=e.target.result;
+    document.getElementById('logo-preview-wrap').innerHTML=`<img src="${logoBase64}" class="logo-preview" onclick="document.getElementById('logo-upload').click()"/>`;
+    document.getElementById('cfg-preview-logo').src=logoBase64;
+    document.getElementById('cfg-preview-logo').style.display='block';
+    document.getElementById('cfg-preview-icon').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function loadConfiguracoes(){
+  const{data}=await sb.from('configuracoes').select('*').eq('id',1).single();
+  if(!data)return;
+  document.getElementById('cfg-nome').value=data.nome_empresa||'';
+  document.getElementById('cfg-slogan').value=data.slogan||'';
+  document.getElementById('cfg-preview-nome').textContent=data.nome_empresa||'DRE Gerencial';
+  document.getElementById('cfg-preview-slogan').textContent=data.slogan||'Sistema de Gestão Financeira';
+  if(data.logo_base64){
+    logoBase64=data.logo_base64;
+    document.getElementById('logo-preview-wrap').innerHTML=`<img src="${logoBase64}" class="logo-preview" onclick="document.getElementById('logo-upload').click()"/>`;
+    document.getElementById('cfg-preview-logo').src=logoBase64;
+    document.getElementById('cfg-preview-logo').style.display='block';
+    document.getElementById('cfg-preview-icon').style.display='none';
   }
-  btn.disabled = false; btn.innerHTML = '<i class="ti ti-user-plus"></i> Criar usuário';
-  document.getElementById('u-nome').value = ''; document.getElementById('u-email').value = ''; document.getElementById('u-senha').value = '';
-  toast('Usuário criado! Peça para ele confirmar o e-mail.'); renderUsuarios();
 }
 
-async function renderUsuarios() {
-  const { data } = await sb.from('user_profiles').select('*').order('name');
-  const el = document.getElementById('tabela-usuarios');
-  if (!data?.length) { el.innerHTML = '<div class="empty">Nenhum usuário cadastrado.</div>'; return; }
-  el.innerHTML = `<table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Ações</th></tr></thead><tbody>` +
-    data.map(u => `<tr>
-      <td><div style="display:flex;align-items:center;gap:8px">
-        <div class="user-avatar" style="width:28px;height:28px;font-size:11px">${(u.name||'?').charAt(0).toUpperCase()}</div>${u.name || '—'}
-      </div></td>
-      <td style="color:var(--text2)">${u.email || '—'}</td>
-      <td><span class="badge ${u.role === 'admin' ? 'admin-role' : 'viewer-role'}">${u.role === 'admin' ? 'Administrador' : 'Visualizador'}</span></td>
-      <td><div style="display:flex;gap:6px">
-        ${u.id !== currentUser.id ? `
-          <button class="btn sm" onclick="toggleRole('${u.id}','${u.role}')"><i class="ti ti-switch-horizontal"></i> Trocar perfil</button>
-          <button class="btn danger" onclick="remUsuario('${u.id}')"><i class="ti ti-trash"></i></button>` : '<span style="font-size:11px;color:var(--text3)">Você</span>'}
-      </div></td>
-    </tr>`).join('') + '</tbody></table>';
+document.addEventListener('input',e=>{
+  if(e.target.id==='cfg-nome')document.getElementById('cfg-preview-nome').textContent=e.target.value||'DRE Gerencial';
+  if(e.target.id==='cfg-slogan')document.getElementById('cfg-preview-slogan').textContent=e.target.value||'';
+});
+
+async function salvarConfiguracoes(){
+  const nome=document.getElementById('cfg-nome').value.trim()||'DRE Gerencial';
+  const slogan=document.getElementById('cfg-slogan').value.trim();
+  const btn=document.getElementById('btn-salvar-cfg');
+  btn.disabled=true;btn.innerHTML='<span class="spinner" style="border-top-color:var(--blue)"></span> Salvando...';
+  const{error}=await sb.from('configuracoes').upsert({id:1,nome_empresa:nome,slogan,logo_base64:logoBase64});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Salvar configurações';
+  if(error)return toast('Erro: '+error.message);
+  // Atualiza topbar e login
+  document.getElementById('topbar-company-name').textContent=nome;
+  document.getElementById('auth-company-name').textContent=nome;
+  if(logoBase64){
+    document.getElementById('topbar-logo-img').src=logoBase64;document.getElementById('topbar-logo-img').style.display='block';
+    document.getElementById('topbar-logo-icon').style.display='none';
+  }
+  toast('Configurações salvas!');
 }
 
-async function toggleRole(id, current) {
-  const newRole = current === 'admin' ? 'viewer' : 'admin';
-  await sb.from('user_profiles').update({ role: newRole }).eq('id', id);
-  toast('Perfil alterado.'); renderUsuarios();
+// USUÁRIOS
+async function addUsuario(){
+  const nome=document.getElementById('u-nome').value.trim(),email=document.getElementById('u-email').value.trim();
+  const role=document.getElementById('u-role').value,senha=document.getElementById('u-senha').value;
+  if(!nome||!email||!senha)return alert('Preencha nome, e-mail e senha.');
+  if(senha.length<6)return alert('Senha mínima de 6 caracteres.');
+  const btn=document.getElementById('btn-add-user');btn.disabled=true;btn.innerHTML='<span class="spinner" style="border-top-color:var(--blue)"></span> Criando...';
+  const{data,error}=await sb.auth.signUp({email,password:senha,options:{data:{name:nome}}});
+  if(error){btn.disabled=false;btn.innerHTML='<i class="ti ti-user-plus"></i> Criar usuário';return toast('Erro: '+error.message);}
+  if(data.user)await sb.from('user_profiles').upsert({id:data.user.id,name:nome,email,role});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-user-plus"></i> Criar usuário';
+  document.getElementById('u-nome').value='';document.getElementById('u-email').value='';document.getElementById('u-senha').value='';
+  toast('Usuário criado!');renderUsuarios();
 }
-async function remUsuario(id) {
-  if (!confirm('Remover este usuário do sistema?')) return;
-  await sb.from('user_profiles').delete().eq('id', id);
-  toast('Usuário removido.'); renderUsuarios();
+async function renderUsuarios(){
+  const{data}=await sb.from('user_profiles').select('*').order('name');
+  const el=document.getElementById('tabela-usuarios');
+  if(!data?.length){el.innerHTML='<div class="empty">Nenhum usuário.</div>';return;}
+  el.innerHTML=`<table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Ações</th></tr></thead><tbody>`+
+    data.map(u=>`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="user-avatar" style="width:28px;height:28px;font-size:11px">${(u.name||'?').charAt(0).toUpperCase()}</div>${u.name||'—'}</div></td><td style="color:var(--text2)">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'admin-role':'viewer-role'}">${u.role==='admin'?'Administrador':'Visualizador'}</span></td><td><div style="display:flex;gap:6px">${u.id!==currentUser.id?`<button class="btn sm" onclick="toggleRole('${u.id}','${u.role}')"><i class="ti ti-switch-horizontal"></i> Trocar perfil</button><button class="btn danger" onclick="remUsuario('${u.id}')"><i class="ti ti-trash"></i></button>`:'<span style="font-size:11px;color:var(--text3)">Você</span>'}</div></td></tr>`).join('')+'</tbody></table>';
 }
+async function toggleRole(id,current){const newRole=current==='admin'?'viewer':'admin';await sb.from('user_profiles').update({role:newRole}).eq('id',id);toast('Perfil alterado.');renderUsuarios();}
+async function remUsuario(id){if(!confirm('Remover?'))return;await sb.from('user_profiles').delete().eq('id',id);toast('Removido.');renderUsuarios();}
 
-// ── MODALS ───────────────────────────────────────────────────────
-function closeModal(e, force) { if (force || e.target === document.getElementById('modal-overlay')) document.getElementById('modal-overlay').classList.remove('open'); }
-function closeRecibo(e, force) { if (force || e.target === document.getElementById('recibo-overlay')) document.getElementById('recibo-overlay').classList.remove('open'); }
+function closeModal(e,force){if(force||e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('open');}
+function closeRecibo(e,force){if(force||e.target===document.getElementById('recibo-overlay'))document.getElementById('recibo-overlay').classList.remove('open');}
 
-// ── START ────────────────────────────────────────────────────────
 init();
 </script>
 </body>
