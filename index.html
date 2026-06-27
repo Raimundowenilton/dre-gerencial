@@ -327,22 +327,26 @@ tr:hover td{background:#1e2229}
     <!-- GRÁFICOS -->
     <div id="panel-graficos" class="panel">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-        <div style="font-size:13px;font-weight:600;color:var(--text2)">Análise gráfica — evolução mensal</div>
-        <input id="graf-ano" type="number" value="2026" min="2020" max="2040" onchange="renderGraficos()" style="width:90px"/>
+        <div style="font-size:13px;font-weight:600;color:#00e676"><i class="ti ti-chart-bar" aria-hidden="true"></i> Análise gráfica — evolução mensal</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="graf-ano" type="number" value="2026" min="2020" max="2040" onchange="renderGraficos()" style="width:90px"/>
+          <button class="btn sm" onclick="renderGraficos()"><i class="ti ti-refresh"></i></button>
+        </div>
       </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px" id="graf-cards"></div>
       <div class="grid2" style="margin-bottom:14px">
-        <div class="card">
-          <div class="card-title"><i class="ti ti-trending-up"></i> Receitas vs Despesas (mensal)</div>
-          <canvas id="chart-receita-despesa" height="220"></canvas>
+        <div class="card" style="padding:16px">
+          <div class="card-title"><i class="ti ti-trending-up" aria-hidden="true"></i> Receitas vs Despesas</div>
+          <canvas id="chart-receita-despesa" height="240"></canvas>
         </div>
-        <div class="card">
-          <div class="card-title"><i class="ti ti-chart-bar"></i> Resultado líquido por mês</div>
-          <canvas id="chart-resultado" height="220"></canvas>
+        <div class="card" style="padding:16px">
+          <div class="card-title"><i class="ti ti-chart-bar" aria-hidden="true"></i> Resultado líquido por mês</div>
+          <canvas id="chart-resultado" height="240"></canvas>
         </div>
       </div>
-      <div class="card">
-        <div class="card-title"><i class="ti ti-chart-line"></i> Saldo acumulado ao longo do ano</div>
-        <canvas id="chart-acumulado" height="140"></canvas>
+      <div class="card" style="padding:16px">
+        <div class="card-title"><i class="ti ti-chart-line" aria-hidden="true"></i> Saldo acumulado ao longo do ano</div>
+        <canvas id="chart-acumulado" height="130"></canvas>
       </div>
     </div>
 
@@ -709,6 +713,44 @@ tr:hover td{background:#1e2229}
 </div>
 
 <!-- MODAL EDITAR LANÇAMENTO -->
+<!-- MODAL EDITAR RECORRENTE -->
+<div class="edit-overlay" id="rec-edit-overlay" onmousedown="if(event.target===this)closeRecEdit()">
+  <div class="modal-edit" style="width:600px;max-height:92vh;overflow-y:auto">
+    <div class="modal-hd">
+      <h2 id="rec-edit-title" style="color:#00e676">Editar despesa recorrente</h2>
+      <button class="close-btn" onclick="closeRecEdit()">×</button>
+    </div>
+    <input type="hidden" id="rec-edit-id"/>
+    <input type="hidden" id="rec-edit-natureza"/>
+    <label class="first">Tipo de conta</label>
+    <select id="rec-edit-tipo">
+      <option value="custo">Custo operacional</option>
+      <option value="despesa_adm">Despesa administrativa</option>
+      <option value="despesa_com">Despesa comercial</option>
+      <option value="receita">Receita</option>
+      <option value="deducao">Dedução da receita</option>
+      <option value="fin_desp">Despesa financeira</option>
+      <option value="fin_rec">Receita financeira</option>
+    </select>
+    <label>Descrição</label>
+    <input id="rec-edit-desc" placeholder="Descrição"/>
+    <!-- Fixa: um único valor -->
+    <div id="rec-edit-fixo">
+      <label>Valor mensal (R$)</label>
+      <input id="rec-edit-valor" type="number" min="0" step="0.01" placeholder="0,00"/>
+    </div>
+    <!-- Variável: um valor por mês -->
+    <div id="rec-edit-variavel" style="display:none">
+      <label>Valores por mês</label>
+      <div id="rec-edit-meses-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px"></div>
+    </div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn primary" onclick="salvarRecorrente()"><i class="ti ti-check"></i> Salvar alteração</button>
+      <button class="btn" onclick="closeRecEdit()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="edit-overlay" id="edit-overlay" onmousedown="editOverlayClick(event)">
   <div class="modal-edit">
     <div class="modal-hd">
@@ -1042,17 +1084,82 @@ async function remRecorrente(id){if(!confirm('Remover?'))return;await sb.from('d
 async function abrirEdicaoRecorrente(id){
   const{data}=await sb.from('despesas_recorrentes').select('*').eq('id',id).single();
   if(!data)return toast('Não encontrado.');
-  const valorUnit = data.parcelas > 0 ? (data.total / data.parcelas) : data.total;
-  _editRecord = {table:'despesas_recorrentes', id, tipo:data.tipo, descricao:data.descricao, valor:valorUnit, mes:data.mes_ini, ano:data.ano_ini};
-  document.getElementById('edit-id').value = id;
-  document.getElementById('edit-table').value = 'despesas_recorrentes';
-  document.getElementById('edit-tipo').value = data.tipo;
-  document.getElementById('edit-desc').value = data.descricao || '';
-  document.getElementById('edit-valor').value = valorUnit.toFixed(2);
-  document.getElementById('edit-mes').value = data.mes_ini;
-  document.getElementById('edit-ano').value = data.ano_ini;
-  document.getElementById('edit-modal-title').textContent = 'Editar despesa recorrente';
-  document.getElementById('edit-overlay').classList.add('open');
+  const natureza=data.natureza||'fixa';
+  document.getElementById('rec-edit-id').value=id;
+  document.getElementById('rec-edit-natureza').value=natureza;
+  document.getElementById('rec-edit-tipo').value=data.tipo;
+  document.getElementById('rec-edit-desc').value=data.descricao||'';
+  document.getElementById('rec-edit-title').textContent=(natureza==='fixa'?'Editar despesa fixa':'Editar despesa variável')+' — '+data.parcelas+' parcela'+(data.parcelas>1?'s':'');
+  if(natureza==='fixa'){
+    // Fixa: mostra um valor único
+    document.getElementById('rec-edit-fixo').style.display='block';
+    document.getElementById('rec-edit-variavel').style.display='none';
+    const valorUnit=data.parcelas>0?(data.total/data.parcelas):data.total;
+    document.getElementById('rec-edit-valor').value=valorUnit.toFixed(2);
+  } else {
+    // Variável: mostra campo por mês
+    document.getElementById('rec-edit-fixo').style.display='none';
+    document.getElementById('rec-edit-variavel').style.display='block';
+    const grid=document.getElementById('rec-edit-meses-grid');
+    grid.innerHTML='';
+    const vpm=data.valores_por_mes||{};
+    // Sort keys by year-month
+    const keys=Object.keys(vpm).sort((a,b)=>{
+      const[ay,am]=a.split('-').map(Number);
+      const[by,bm]=b.split('-').map(Number);
+      return ay!==by?ay-by:am-bm;
+    });
+    keys.forEach(k=>{
+      const[ano,mes]=k.split('-');
+      const mesNome=MESES[parseInt(mes)]||mes;
+      grid.innerHTML+=`<div style="display:flex;align-items:center;gap:8px">
+        <label style="margin:0;min-width:110px;font-size:12px;color:var(--text2)">${mesNome}/${ano}</label>
+        <input type="number" id="rvm-${k}" value="${vpm[k]||0}" min="0" step="0.01" style="margin:0"/>
+      </div>`;
+    });
+  }
+  document.getElementById('rec-edit-overlay').classList.add('open');
+}
+
+function closeRecEdit(){
+  document.getElementById('rec-edit-overlay').classList.remove('open');
+}
+
+async function salvarRecorrente(){
+  const id=document.getElementById('rec-edit-id').value;
+  const natureza=document.getElementById('rec-edit-natureza').value;
+  const tipo=document.getElementById('rec-edit-tipo').value;
+  const descricao=document.getElementById('rec-edit-desc').value.trim();
+  if(!descricao)return alert('Informe a descrição.');
+  let updateData={tipo,descricao};
+  if(natureza==='fixa'){
+    const valor=parseFloat(document.getElementById('rec-edit-valor').value)||0;
+    if(!valor)return alert('Informe o valor.');
+    // Rebuild valores_por_mes with new value
+    const{data:orig}=await sb.from('despesas_recorrentes').select('valores_por_mes,parcelas').eq('id',id).single();
+    if(!orig)return toast('Erro ao buscar registro.');
+    const novoValores={};
+    Object.keys(orig.valores_por_mes||{}).forEach(k=>novoValores[k]=valor);
+    updateData.valores_por_mes=novoValores;
+    updateData.total=Object.values(novoValores).reduce((a,b)=>a+b,0);
+  } else {
+    // Variável: collect each month's value
+    const{data:orig}=await sb.from('despesas_recorrentes').select('valores_por_mes').eq('id',id).single();
+    if(!orig)return toast('Erro ao buscar registro.');
+    const novoValores={};
+    Object.keys(orig.valores_por_mes||{}).forEach(k=>{
+      const inp=document.getElementById('rvm-'+k);
+      novoValores[k]=inp?parseFloat(inp.value)||0:orig.valores_por_mes[k];
+    });
+    updateData.valores_por_mes=novoValores;
+    updateData.total=Object.values(novoValores).reduce((a,b)=>a+b,0);
+  }
+  const{error}=await sb.from('despesas_recorrentes').update(updateData).eq('id',id);
+  if(error)return toast('Erro: '+error.message);
+  closeRecEdit();
+  toast('Despesa recorrente salva!');
+  renderRecorrentes();
+  renderDRE();
 }
 
 // PROJEÇÕES
@@ -1557,14 +1664,71 @@ function closeEdit(e,force){
 
 // GRÁFICOS
 let chartRD=null,chartRes=null,chartAcum=null;
+
+// Vila FITNESS color palette for charts
+const VF = {
+  green: '#00e676', greenDim: 'rgba(0,230,118,0.75)', greenFill: 'rgba(0,230,118,0.12)',
+  red: '#ff4d4d', redDim: 'rgba(255,77,77,0.75)', redFill: 'rgba(255,77,77,0.1)',
+  blue: '#00b0ff', blueFill: 'rgba(0,176,255,0.15)',
+  amber: '#ffb300', text: '#9ba3b2', grid: 'rgba(255,255,255,0.06)', bg: '#161920'
+};
+
+function vfChartDefaults(){
+  return {
+    responsive:true,
+    maintainAspectRatio:true,
+    animation:{duration:600,easing:'easeOutQuart'},
+    plugins:{
+      legend:{
+        position:'bottom',
+        labels:{color:VF.text,font:{size:12},padding:16,usePointStyle:true,pointStyleWidth:10}
+      },
+      tooltip:{
+        backgroundColor:'#1e2229',
+        borderColor:'#00e67640',
+        borderWidth:1,
+        titleColor:'#00e676',
+        bodyColor:'#f0f2f5',
+        padding:12,
+        cornerRadius:8,
+        callbacks:{
+          label:ctx=>' '+fmt(Math.abs(ctx.parsed.y)),
+          title:ctx=>ctx[0].label
+        }
+      }
+    },
+    scales:{
+      x:{
+        grid:{color:VF.grid,drawBorder:false},
+        ticks:{color:VF.text,font:{size:11}},
+        border:{display:false}
+      },
+      y:{
+        grid:{color:VF.grid,drawBorder:false},
+        ticks:{
+          color:VF.text,font:{size:11},
+          callback:v=>{
+            const abs=Math.abs(v);
+            if(abs>=1000000)return'R$'+(v/1000000).toFixed(1)+'M';
+            if(abs>=1000)return'R$'+(v/1000).toFixed(0)+'k';
+            return'R$'+v;
+          }
+        },
+        border:{display:false}
+      }
+    }
+  };
+}
+
 async function renderGraficos(){
   const ano=parseInt(document.getElementById('graf-ano').value)||2026;
   const all=await getAllData(ano);
-  const mesesLabel=MESES.slice(1);
+  const mesesLabel=MESES.slice(1).map(m=>m.substring(0,3));
   const porMes=Array.from({length:12},(_,i)=>{
     const m=i+1,items=all.filter(x=>x.mes===m);
     const sum=t=>items.filter(x=>x.tipo===t).reduce((a,b)=>a+b.valor,0);
-    const rec=sum('receita'),ded=sum('deducao'),cus=sum('custo'),da=sum('despesa_adm')+sum('despesa_com'),fd=sum('fin_desp'),fr=sum('fin_rec');
+    const rec=sum('receita'),ded=sum('deducao'),cus=sum('custo');
+    const da=sum('despesa_adm')+sum('despesa_com'),fd=sum('fin_desp'),fr=sum('fin_rec');
     const res=rec-ded-cus-da-fd+fr;
     return{rec,desp:cus+da+fd,res};
   });
@@ -1573,16 +1737,96 @@ async function renderGraficos(){
   const ress=porMes.map(m=>parseFloat(m.res.toFixed(2)));
   let acum=0;const acums=ress.map(v=>{acum+=v;return parseFloat(acum.toFixed(2));});
 
-  const opts={responsive:true,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.parsed.y)}}},scales:{y:{ticks:{callback:v=>'R$'+Math.abs(v/1000).toFixed(0)+'k'}}}};
+  const totalRec=recs.reduce((a,b)=>a+b,0);
+  const totalDesp=desps.reduce((a,b)=>a+b,0);
+  const totalRes=ress.reduce((a,b)=>a+b,0);
 
-  if(chartRD){chartRD.destroy();}
-  chartRD=new Chart(document.getElementById('chart-receita-despesa'),{type:'bar',data:{labels:mesesLabel,datasets:[{label:'Receitas',data:recs,backgroundColor:'rgba(59,109,17,.7)',borderRadius:4},{label:'Despesas',data:desps,backgroundColor:'rgba(163,45,45,.7)',borderRadius:4}]},options:{...opts,plugins:{...opts.plugins}}});
+  // Update summary cards
+  const cards=document.getElementById('graf-cards');
+  if(cards) cards.innerHTML=`
+    <div class="metric-card"><div class="metric-label">Total Receitas ${ano}</div><div class="metric-value pos">${fmt(totalRec)}</div></div>
+    <div class="metric-card"><div class="metric-label">Total Despesas ${ano}</div><div class="metric-value neg">${fmt(totalDesp)}</div></div>
+    <div class="metric-card"><div class="metric-label">Resultado ${ano}</div><div class="metric-value ${totalRes>=0?'pos':'neg'}">${fmtN(totalRes)}</div></div>
+    <div class="metric-card"><div class="metric-label">Margem líquida</div><div class="metric-value ${totalRes>=0?'pos':'neg'}">${totalRec>0?((totalRes/totalRec)*100).toFixed(1)+'%':'—'}</div></div>`;
 
-  if(chartRes){chartRes.destroy();}
-  chartRes=new Chart(document.getElementById('chart-resultado'),{type:'bar',data:{labels:mesesLabel,datasets:[{label:'Resultado',data:ress,backgroundColor:ress.map(v=>v>=0?'rgba(59,109,17,.75)':'rgba(163,45,45,.75)'),borderRadius:4}]},options:{...opts}});
+  const opts=vfChartDefaults();
 
-  if(chartAcum){chartAcum.destroy();}
-  chartAcum=new Chart(document.getElementById('chart-acumulado'),{type:'line',data:{labels:mesesLabel,datasets:[{label:'Saldo acumulado',data:acums,borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,.1)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:acums.map(v=>v>=0?'#3B6D11':'#A32D2D')}]},options:{...opts,plugins:{...opts.plugins}}});
+  // Chart 1: Receitas vs Despesas
+  if(chartRD)chartRD.destroy();
+  chartRD=new Chart(document.getElementById('chart-receita-despesa'),{
+    type:'bar',
+    data:{
+      labels:mesesLabel,
+      datasets:[
+        {label:'Receitas',data:recs,backgroundColor:VF.greenDim,hoverBackgroundColor:VF.green,borderColor:VF.green,borderWidth:0,borderRadius:5,borderSkipped:false},
+        {label:'Despesas',data:desps,backgroundColor:VF.redDim,hoverBackgroundColor:VF.red,borderColor:VF.red,borderWidth:0,borderRadius:5,borderSkipped:false}
+      ]
+    },
+    options:{...opts,plugins:{...opts.plugins,title:{display:false}}}
+  });
+
+  // Chart 2: Resultado líquido
+  if(chartRes)chartRes.destroy();
+  chartRes=new Chart(document.getElementById('chart-resultado'),{
+    type:'bar',
+    data:{
+      labels:mesesLabel,
+      datasets:[{
+        label:'Resultado líquido',
+        data:ress,
+        backgroundColor:ress.map(v=>v>=0?VF.greenDim:VF.redDim),
+        hoverBackgroundColor:ress.map(v=>v>=0?VF.green:VF.red),
+        borderColor:ress.map(v=>v>=0?VF.green:VF.red),
+        borderWidth:1,
+        borderRadius:5,
+        borderSkipped:false
+      }]
+    },
+    options:{...opts}
+  });
+
+  // Chart 3: Saldo acumulado
+  if(chartAcum)chartAcum.destroy();
+  // Create gradient
+  const ctx3=document.getElementById('chart-acumulado').getContext('2d');
+  const grad=ctx3.createLinearGradient(0,0,0,300);
+  grad.addColorStop(0,'rgba(0,176,255,0.3)');
+  grad.addColorStop(0.5,'rgba(0,176,255,0.08)');
+  grad.addColorStop(1,'rgba(0,176,255,0)');
+  chartAcum=new Chart(ctx3,{
+    type:'line',
+    data:{
+      labels:mesesLabel,
+      datasets:[{
+        label:'Saldo acumulado',
+        data:acums,
+        borderColor:VF.blue,
+        borderWidth:2.5,
+        backgroundColor:grad,
+        fill:true,
+        tension:0.4,
+        pointRadius:acums.map(v=>v===0?0:5),
+        pointHoverRadius:8,
+        pointBackgroundColor:acums.map(v=>v>=0?VF.green:VF.red),
+        pointBorderColor:acums.map(v=>v>=0?VF.green:VF.red),
+        pointBorderWidth:2
+      }]
+    },
+    options:{
+      ...opts,
+      plugins:{
+        ...opts.plugins,
+        annotation:{} // placeholder
+      },
+      scales:{
+        ...opts.scales,
+        y:{
+          ...opts.scales.y,
+          grid:{...opts.scales.y.grid,color:(ctx)=>ctx.tick.value===0?'rgba(255,255,255,0.2)':VF.grid},
+        }
+      }
+    }
+  });
 }
 
 // EXPORTAR PDF - DRE
