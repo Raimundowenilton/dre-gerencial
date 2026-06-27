@@ -1815,8 +1815,18 @@ async function salvarEdicao(){
     }
   }
 
-  const { error } = await sb.from(table).update(updateData).eq('id', id);
-  if(error){ toast('Erro: ' + error.message); console.error(error); return; }
+  console.log('UPDATE:', table, 'id:', id, 'data:', JSON.stringify(updateData));
+  const { data: updResult, error } = await sb.from(table).update(updateData).eq('id', id).select();
+  console.log('RESULT:', updResult, 'ERROR:', error);
+  if(error){
+    toast('Erro ao salvar: ' + error.message);
+    alert('Erro detalhado: ' + JSON.stringify(error));
+    return;
+  }
+  if(!updResult || updResult.length === 0){
+    toast('Aviso: nenhum registro atualizado. Verifique as permissões.');
+    console.warn('No rows updated - possible RLS issue');
+  }
 
   _editRecord = null;
   closeEdit(null, true);
