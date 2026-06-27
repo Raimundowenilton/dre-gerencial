@@ -205,9 +205,9 @@ tr:hover td{background:var(--surface2)}
       <button class="tab active" onclick="switchTab('dre')" id="tab-dre"><i class="ti ti-file-analytics"></i> DRE</button>
       <button class="tab" onclick="switchTab('fluxo')" id="tab-fluxo"><i class="ti ti-cash"></i> Fluxo de Caixa</button>
       <button class="tab" onclick="switchTab('graficos')" id="tab-graficos"><i class="ti ti-chart-line"></i> Gráficos</button>
-      <button class="tab" onclick="switchTab('lancamentos')" id="tab-lancamentos" style="display:none"><i class="ti ti-list"></i> Lançamentos</button>
+      <button class="tab" onclick="switchTab('lancamentos')" id="tab-lancamentos" style="display:none"><i class="ti ti-list"></i> Lançamento (Real)</button>
       <button class="tab" onclick="switchTab('recorrentes')" id="tab-recorrentes" style="display:none"><i class="ti ti-repeat"></i> Fixas/Variáveis</button>
-      <button class="tab" onclick="switchTab('projecao')" id="tab-projecao" style="display:none"><i class="ti ti-trending-up"></i> Projeção</button>
+      <button class="tab" onclick="switchTab('projecao')" id="tab-projecao" style="display:none"><i class="ti ti-trending-up"></i> Projeção (Budget)</button>
       <button class="tab" onclick="switchTab('configuracoes')" id="tab-configuracoes" style="display:none"><i class="ti ti-settings"></i> Config.</button>
       <button class="tab" onclick="switchTab('categorias')" id="tab-categorias" style="display:none"><i class="ti ti-tag"></i> Categorias</button>
       <button class="tab" onclick="switchTab('usuarios')" id="tab-usuarios" style="display:none"><i class="ti ti-users"></i> Usuários</button>
@@ -294,7 +294,7 @@ tr:hover td{background:var(--surface2)}
     <div id="panel-lancamentos" class="panel">
       <div class="grid2" style="margin-bottom:14px;align-items:start">
         <div class="card">
-          <div class="card-title"><i class="ti ti-plus"></i> Novo lançamento avulso</div>
+          <div class="card-title"><i class="ti ti-plus"></i> Novo lançamento real</div>
           <div class="form-row cols2">
             <div>
               <label class="first">Tipo de conta</label>
@@ -360,7 +360,7 @@ tr:hover td{background:var(--surface2)}
         </div>
       </div>
       <div class="card">
-        <div class="card-title"><i class="ti ti-list-details"></i> Lançamentos avulsos</div>
+        <div class="card-title"><i class="ti ti-list-details"></i> Lançamentos reais</div>
         <div class="table-wrap" id="tabela-lancamentos"><div class="empty">Nenhum lançamento.</div></div>
       </div>
     </div>
@@ -368,7 +368,7 @@ tr:hover td{background:var(--surface2)}
     <!-- RECORRENTES -->
     <div id="panel-recorrentes" class="panel">
       <div class="info-box"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i>
-        Despesas com recorrência automática. Cada parcela entra automaticamente no DRE e no Fluxo de Caixa.
+        Despesas reais com recorrência automática. Cada parcela entra automaticamente no DRE e no Fluxo de Caixa.
       </div>
       <div class="grid2" style="margin-bottom:14px;align-items:start">
         <div class="card">
@@ -444,7 +444,7 @@ tr:hover td{background:var(--surface2)}
     <!-- PROJEÇÃO -->
     <div id="panel-projecao" class="panel">
       <div class="card" style="margin-bottom:14px">
-        <div class="card-title"><i class="ti ti-trending-up"></i> Projeção de receitas futuras</div>
+        <div class="card-title"><i class="ti ti-trending-up"></i> Projeção (Budget) — receitas e despesas futuras</div>
         <div class="form-row cols4" style="align-items:end">
           <div><label class="first">Descrição</label><input id="p-desc" placeholder="Ex: Contrato cliente X"/></div>
           <div><label class="first">Tipo</label>
@@ -480,7 +480,7 @@ tr:hover td{background:var(--surface2)}
         </div>
       </div>
       <div class="card">
-        <div class="card-title">Projeções cadastradas</div>
+        <div class="card-title">Projeções (Budget) cadastradas</div>
         <div id="tabela-projecoes"><div class="empty">Nenhuma projeção.</div></div>
       </div>
     </div>
@@ -746,7 +746,7 @@ async function loadUserRole(user){
 }
 
 function showAuth(){document.getElementById('loading-screen').style.display='none';document.getElementById('auth-screen').style.display='flex';document.getElementById('app-screen').style.display='none';}
-function showApp(){document.getElementById('loading-screen').style.display='none';document.getElementById('auth-screen').style.display='none';document.getElementById('app-screen').style.display='block';renderDRE();}
+function showApp(){document.getElementById('loading-screen').style.display='none';document.getElementById('auth-screen').style.display='none';document.getElementById('app-screen').style.display='block';renderDRE();loadCategoriasSelects();}
 
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim();
@@ -781,6 +781,32 @@ function toast(msg,dur=2500){const t=document.getElementById('toast');t.textCont
 function showFileChip(input,chipId){const f=input.files[0]||null;if(chipId==='l-file-chip')currentFileL=f;else currentFileDf=f;document.getElementById(chipId).innerHTML=f?`<div class="file-chip"><i class="ti ti-paperclip"></i>${f.name}</div>`:''}
 async function uploadFile(file,folder){if(!file)return null;const ext=file.name.split('.').pop();const path=`${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;const{error}=await sb.storage.from('comprovantes').upload(path,file);if(error){toast('Erro ao enviar arquivo.');return null;}return path;}
 async function getFileUrl(path){if(!path)return null;const{data}=await sb.storage.from('comprovantes').createSignedUrl(path,3600);return data?.signedUrl||null;}
+
+// CARREGAR CATEGORIAS NOS SELECTS
+async function loadCategoriasSelects(){
+  const{data}=await sb.from('categorias').select('*').order('tipo').order('nome');
+  if(!data?.length)return;
+  const TIPOS_LABEL_MAP={
+    receita:'Receita operacional',deducao:'Dedução da receita',custo:'Custo operacional',
+    despesa_adm:'Despesa administrativa',despesa_com:'Despesa comercial',
+    fin_rec:'Receita financeira',fin_desp:'Despesa financeira'
+  };
+  // Selects que recebem categorias personalizadas
+  const selectIds=['l-tipo','df-tipo','p-tipo','edit-tipo'];
+  selectIds.forEach(sid=>{
+    const sel=document.getElementById(sid);
+    if(!sel)return;
+    // Mantém as opções padrão mas adiciona subcategorias como optgroup
+    const grupos={};
+    data.forEach(c=>{if(!grupos[c.tipo])grupos[c.tipo]=[];grupos[c.tipo].push(c);});
+    // Rebuild select with optgroups
+    sel.innerHTML=Object.entries(TIPOS_LABEL_MAP).map(([tipo,label])=>{
+      const cats=grupos[tipo]||[];
+      const opts=cats.map(c=>`<option value="${c.tipo}" data-cat-id="${c.id}">${c.nome}</option>`).join('');
+      return`<optgroup label="${label}"><option value="${tipo}">${label} (geral)</option>${opts}</optgroup>`;
+    }).join('');
+  });
+}
 
 // DADOS CONSOLIDADOS
 async function getAllData(ano){
@@ -954,10 +980,36 @@ async function renderProjecoes(){
   const{data}=await sb.from('projecoes').select('*').order('created_at',{ascending:false});
   const el=document.getElementById('tabela-projecoes');
   if(!data?.length){el.innerHTML='<div class="empty">Nenhuma projeção.</div>';return;}
-  el.innerHTML=`<table><thead><tr><th>Período</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor/mês</th><th></th></tr></thead><tbody>`+
-    data.map(p=>`<tr><td>${MESES[p.mes_ini].substring(0,3)}${p.mes_ini!==p.mes_fim?' → '+MESES[p.mes_fim].substring(0,3):''} ${p.ano}</td><td><span class="badge ${p.tipo}">${TIPOS_LABEL[p.tipo]}</span></td><td>${p.descricao}</td><td class="num">${fmt(p.valor)}</td><td><button class="btn danger" onclick="remProjecao('${p.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('')+'</tbody></table>';
+  el.innerHTML=`<table><thead><tr><th>Período</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor/mês</th><th>Ações</th></tr></thead><tbody>`+
+    data.map(p=>{
+      const descSafe=(p.descricao||'').replace(/'/g,"\'");
+      return`<tr>
+        <td>${MESES[p.mes_ini].substring(0,3)}${p.mes_ini!==p.mes_fim?' → '+MESES[p.mes_fim].substring(0,3):''} ${p.ano}</td>
+        <td><span class="badge ${p.tipo}">${TIPOS_LABEL[p.tipo]}</span></td>
+        <td>${p.descricao}</td>
+        <td class="num">${fmt(p.valor)}</td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn sm" title="Editar" onclick="abrirEdicaoProjecao('${p.id}')"><i class="ti ti-pencil"></i></button>
+          <button class="btn danger" title="Remover" onclick="remProjecao('${p.id}')"><i class="ti ti-trash"></i></button>
+        </div></td>
+      </tr>`;
+    }).join('')+'</tbody></table>';
 }
 async function remProjecao(id){if(!confirm('Remover?'))return;await sb.from('projecoes').delete().eq('id',id);toast('Removida.');renderProjecoes();}
+
+async function abrirEdicaoProjecao(id){
+  const{data}=await sb.from('projecoes').select('*').eq('id',id).single();
+  if(!data)return toast('Não encontrado.');
+  document.getElementById('edit-id').value=id;
+  document.getElementById('edit-table').value='projecoes';
+  document.getElementById('edit-tipo').value=data.tipo;
+  document.getElementById('edit-desc').value=data.descricao||'';
+  document.getElementById('edit-valor').value=data.valor||'';
+  document.getElementById('edit-mes').value=data.mes_ini||1;
+  document.getElementById('edit-ano').value=data.ano||2026;
+  document.getElementById('edit-modal-title').textContent='Editar projeção';
+  document.getElementById('edit-overlay').classList.add('open');
+}
 
 // DRE
 async function renderDRE(){
@@ -1558,6 +1610,19 @@ async function exportFluxoExcel(){
   XLSX.writeFile(wb,`FluxoCaixa_${ano}.xlsx`);
 }
 
+// ── EDIÇÃO MODAL GERAL ───────────────────────────────────────
+function abrirEdicao(table, id, tipo, descricao, valor, mes, ano){
+  document.getElementById('edit-id').value=id;
+  document.getElementById('edit-table').value=table;
+  document.getElementById('edit-tipo').value=tipo;
+  document.getElementById('edit-desc').value=descricao||'';
+  document.getElementById('edit-valor').value=valor||'';
+  document.getElementById('edit-mes').value=mes||1;
+  document.getElementById('edit-ano').value=ano||2026;
+  document.getElementById('edit-modal-title').textContent='Editar lançamento';
+  document.getElementById('edit-overlay').classList.add('open');
+}
+
 // ── CATEGORIAS ────────────────────────────────────────────────
 let catCorSel='#185FA5';
 function selectCor(el,ctx){
@@ -1623,6 +1688,7 @@ async function salvarEdicao(){
   if(!valor)return alert('Informe o valor.');
   let updateData={tipo,descricao,valor};
   if(table==='lancamentos')updateData={...updateData,mes,ano};
+  if(table==='projecoes')updateData={tipo,descricao:descricao,valor,mes_ini:mes,mes_fim:mes,ano};
   if(table==='despesas_recorrentes'){
     const{data:orig}=await sb.from('despesas_recorrentes').select('*').eq('id',id).single();
     if(orig){
@@ -1638,6 +1704,7 @@ async function salvarEdicao(){
   toast('Salvo com sucesso!');
   if(table==='lancamentos')renderTabela();
   if(table==='despesas_recorrentes')renderRecorrentes();
+  if(table==='projecoes')renderProjecoes();
   renderDRE();
 }
 
