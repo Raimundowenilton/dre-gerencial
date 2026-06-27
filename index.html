@@ -2,9 +2,16 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>DRE Gerencial</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css"/>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#185FA5"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="DRE Gerencial"/>
+<link rel="apple-touch-icon" href="/icon-192.png"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -139,6 +146,39 @@ tr:hover td{background:var(--surface2)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text2)}
 .loading-screen i{font-size:32px;color:var(--blue)}
+
+/* ── RESPONSIVE / MOBILE ── */
+@media (max-width:768px){
+  .topbar{height:auto;flex-wrap:wrap;padding:8px 12px;gap:6px}
+  .topbar-brand{font-size:14px}
+  .topbar-name{display:none}
+  .tabs{overflow-x:auto;width:100%;padding:3px;-webkit-overflow-scrolling:touch}
+  .tab{font-size:11px;padding:5px 10px;flex-shrink:0}
+  .topbar-right .user-chip span:not(.role-badge){display:none}
+  .content{padding:12px}
+  .grid2{grid-template-columns:1fr}
+  .form-row.cols2,.form-row.cols3,.form-row.cols4{grid-template-columns:1fr}
+  .card{padding:14px}
+  .modal,.modal-edit{width:95vw!important;padding:16px;max-height:92vh}
+  .fc-tbl th,.fc-tbl td{padding:4px 5px;font-size:11px}
+  .dre-tbl td,.dre-tbl th{padding:5px 8px}
+  .metric-card .metric-value{font-size:16px}
+  table{font-size:12px}
+  th,td{padding:5px 7px}
+  .btn{padding:6px 10px;font-size:12px}
+  .btn.sm{padding:3px 6px;font-size:11px}
+  .compare-grid{grid-template-columns:1fr}
+  #fc-resumo{grid-template-columns:1fr 1fr}
+  .topbar-logo-icon,.topbar-logo{height:28px;width:28px}
+  .edit-overlay,.pwd-overlay,.perm-overlay,.overlay{padding:8px}
+}
+@media (max-width:480px){
+  .tabs{gap:1px}
+  .tab{padding:4px 8px;font-size:10px}
+  .tab i{display:none}
+  #fc-resumo{grid-template-columns:1fr}
+  .card-title{font-size:12px}
+}
 .modal-edit{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;width:520px;max-width:100%;max-height:90vh;overflow-y:auto}
 .cat-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;margin:2px}
 .cat-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
@@ -213,6 +253,10 @@ tr:hover td{background:var(--surface2)}
       <button class="tab" onclick="switchTab('usuarios')" id="tab-usuarios" style="display:none"><i class="ti ti-users"></i> Usuários</button>
     </div>
     <div class="topbar-right">
+      <button class="btn sm" id="btn-instalar-app" onclick="instalarApp()" style="display:none;align-items:center;gap:5px;background:var(--blue);color:#fff;border-color:var(--blue)">
+        <i class="ti ti-download" aria-hidden="true"></i>
+        <span class="hide-mobile">Instalar app</span>
+      </button>
       <div class="user-chip">
         <div class="user-avatar" id="user-avatar">?</div>
         <span id="user-name">-</span>
@@ -604,16 +648,16 @@ tr:hover td{background:var(--surface2)}
 </div>
 
 <!-- MODAIS -->
-<div class="overlay" id="modal-overlay" onclick="closeModal(event)">
+<div class="overlay" id="modal-overlay" onmousedown="if(event.target===this)closeModal(null,true)">
   <div class="modal"><div class="modal-hd"><h2 id="modal-title">Detalhamento</h2><button class="close-btn" onclick="closeModal(null,true)">×</button></div><div id="modal-content"></div></div>
 </div>
-<div class="overlay" id="recibo-overlay" onclick="closeRecibo(event)">
+<div class="overlay" id="recibo-overlay" onmousedown="if(event.target===this)closeRecibo(null,true)">
   <div class="modal" style="width:500px"><div class="modal-hd"><h2 id="recibo-title">Comprovante</h2><button class="close-btn" onclick="closeRecibo(null,true)">×</button></div><div id="recibo-content"></div></div>
 </div>
 <div class="toast" id="toast"></div>
 
 <!-- MODAL TROCAR SENHA -->
-<div class="pwd-overlay" id="pwd-overlay" onclick="closePwd(event)">
+<div class="pwd-overlay" id="pwd-overlay" onmousedown="if(event.target===this)closePwd(null,true)">
   <div class="modal-edit" style="width:400px">
     <div class="modal-hd">
       <h2>Redefinir senha — <span id="pwd-user-name"></span></h2>
@@ -634,7 +678,7 @@ tr:hover td{background:var(--surface2)}
 </div>
 
 <!-- MODAL PERMISSÕES -->
-<div class="perm-overlay" id="perm-overlay" onclick="closePerm(event)">
+<div class="perm-overlay" id="perm-overlay" onmousedown="if(event.target===this)closePerm(null,true)">
   <div class="modal-edit" style="width:480px">
     <div class="modal-hd">
       <h2><i class="ti ti-shield" style="margin-right:6px"></i>Permissões — <span id="perm-user-name"></span></h2>
@@ -653,7 +697,7 @@ tr:hover td{background:var(--surface2)}
 </div>
 
 <!-- MODAL EDITAR LANÇAMENTO -->
-<div class="edit-overlay" id="edit-overlay" onclick="closeEdit(event)">
+<div class="edit-overlay" id="edit-overlay" onmousedown="editOverlayClick(event)">
   <div class="modal-edit">
     <div class="modal-hd">
       <h2 id="edit-modal-title">Editar lançamento</h2>
@@ -1436,8 +1480,11 @@ async function remUsuario(id){if(!confirm('Remover?'))return;await sb.from('user
 
 function closeModal(e,force){if(force||e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('open');}
 function closeRecibo(e,force){if(force||e.target===document.getElementById('recibo-overlay'))document.getElementById('recibo-overlay').classList.remove('open');}
+function editOverlayClick(e){
+  if(e.target===document.getElementById('edit-overlay')) closeEdit(null,true);
+}
 function closeEdit(e,force){
-  if(force||e?.target===document.getElementById('edit-overlay')){
+  if(force){
     document.getElementById('edit-overlay').classList.remove('open');
     const t=document.getElementById('edit-modal-title');
     if(t)t.textContent='Editar lançamento';
@@ -1700,7 +1747,6 @@ async function salvarEdicao(){
   const{error}=await sb.from(table).update(updateData).eq('id',id);
   if(error)return toast('Erro: '+error.message);
   closeEdit(null,true);
-  document.getElementById('edit-modal-title').textContent='Editar lançamento';
   toast('Salvo com sucesso!');
   if(table==='lancamentos')renderTabela();
   if(table==='despesas_recorrentes')renderRecorrentes();
@@ -1709,6 +1755,42 @@ async function salvarEdicao(){
 }
 
 init();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').then(r=>{
+      console.log('SW registrado:',r.scope);
+    }).catch(e=>console.log('SW erro:',e));
+  });
+}
+
+// PWA install prompt
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  // Show install button if not already installed
+  const btn=document.getElementById('btn-instalar-app');
+  if(btn)btn.style.display='flex';
+});
+
+window.addEventListener('appinstalled',()=>{
+  deferredPrompt=null;
+  const btn=document.getElementById('btn-instalar-app');
+  if(btn)btn.style.display='none';
+  toast('App instalado com sucesso!');
+});
+
+function instalarApp(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(c=>{
+      if(c.outcome==='accepted')toast('Instalando o app...');
+      deferredPrompt=null;
+    });
+  }
+}
 </script>
 </body>
 </html>
