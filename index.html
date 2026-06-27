@@ -27,7 +27,7 @@
   --purple:#7c4dff;--purple-bg:#1a0f2e;--purple-text:#9b78ff;
   --radius:8px;--radius-lg:12px;
 }
-body{background:var(--bg)}
+body{background:#0d0f14}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg);min-height:100vh}
 .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center, #0a2e1a 0%, #0d0f14 70%)}
 .auth-card{background:#161920;border:1px solid #00e67630;border-radius:16px;padding:36px 40px;width:420px;max-width:95vw;box-shadow:0 20px 80px rgba(0,230,118,.15)}
@@ -750,14 +750,19 @@ let currentUser=null,currentRole=null,currentFileL=null,currentFileDf=null,logoB
 
 // INIT
 async function init(){
-  const{data:{session}}=await sb.auth.getSession();
-  await loadBranding();
-  if(session){await loadUserRole(session.user);showApp();}
-  else showAuth();
-  sb.auth.onAuthStateChange(async(event,session)=>{
-    if(event==='SIGNED_IN'&&session){await loadUserRole(session.user);showApp();}
-    else if(event==='SIGNED_OUT')showAuth();
-  });
+  try{
+    const{data:{session}}=await sb.auth.getSession();
+    try{await loadBranding();}catch(e){console.warn('Branding error:',e);}
+    if(session){await loadUserRole(session.user);showApp();}
+    else showAuth();
+    sb.auth.onAuthStateChange(async(event,session)=>{
+      if(event==='SIGNED_IN'&&session){await loadUserRole(session.user);showApp();}
+      else if(event==='SIGNED_OUT')showAuth();
+    });
+  }catch(e){
+    console.error('Init error:',e);
+    showAuth(); // fallback — show login screen instead of blank
+  }
 }
 
 async function loadBranding(){
@@ -921,7 +926,7 @@ function buildLancTable(data){
       '<td>' + recibo + '</td>' +
       '<td style="display:flex;gap:4px">' +
         '<button class="btn sm" onclick="abrirEdicaoIdx(' + idx + ')" title="Editar"><i class="ti ti-pencil"></i></button>' +
-        '<button class="btn danger" onclick="remLancamento('' + l.id + '')"><i class="ti ti-trash"></i></button>' +
+        '<button class="btn danger" onclick="remLancamento(\'' + l.id + '\')"><i class="ti ti-trash"></i></button>' +
       '</td></tr>'
     );
   }
@@ -1809,8 +1814,6 @@ async function salvarEdicao(){
       updateData = { tipo: tipo, descricao: descricao, valores_por_mes: novoValores, total: Object.values(novoValores).reduce((a,b)=>a+b,0) };
     }
   }
-
-  console.log('Saving:', table, id, updateData); // debug
 
   const { error } = await sb.from(table).update(updateData).eq('id', id);
   if(error){ toast('Erro: ' + error.message); console.error(error); return; }
