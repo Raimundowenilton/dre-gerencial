@@ -902,10 +902,40 @@ async function renderRecorrentes(){
   const{data}=await sb.from('despesas_recorrentes').select('*').order('created_at',{ascending:false});
   const el=document.getElementById('tabela-recorrentes');
   if(!data?.length){el.innerHTML='<div class="empty">Nenhuma despesa recorrente.</div>';return;}
-  el.innerHTML=`<table style="font-size:12px"><thead><tr><th>Natureza</th><th>Categoria</th><th>Descrição</th><th>Período</th><th style="text-align:right">Total</th><th>Doc</th><th></th></tr></thead><tbody>`+
-    data.map(d=>`<tr><td><span class="badge ${d.natureza}">${d.natureza==='fixa'?'Fixa':'Variável'}</span></td><td><span class="badge ${d.tipo}">${TIPOS_LABEL[d.tipo]}</span></td><td>${d.descricao}<br><span style="color:var(--text3);font-size:10px">${d.parcelas} parcela${d.parcelas>1?'s':''}</span></td><td style="white-space:nowrap">${MESES[d.mes_ini].substring(0,3)}/${d.ano_ini} → ${MESES[d.mes_fim].substring(0,3)}/${d.ano_fim}</td><td class="num">${fmt(d.total)}</td><td>${d.file_path?`<button class="btn sm" onclick="verComprovante('${d.file_path}','${d.descricao}')"><i class="ti ti-paperclip"></i></button>`:'—'}</td><td><button class="btn danger" onclick="remRecorrente('${d.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('')+'</tbody></table>';
+  el.innerHTML=`<table style="font-size:12px"><thead><tr><th>Natureza</th><th>Categoria</th><th>Descrição</th><th>Período</th><th style="text-align:right">Total</th><th>Doc</th><th>Ações</th></tr></thead><tbody>`+
+    data.map(d=>{
+      const descSafe=(d.descricao||'').replace(/'/g,"\'");
+      return`<tr>
+        <td><span class="badge ${d.natureza}">${d.natureza==='fixa'?'Fixa':'Variável'}</span></td>
+        <td><span class="badge ${d.tipo}">${TIPOS_LABEL[d.tipo]}</span></td>
+        <td>${d.descricao}<br><span style="color:var(--text3);font-size:10px">${d.parcelas} parcela${d.parcelas>1?'s':''}</span></td>
+        <td style="white-space:nowrap">${MESES[d.mes_ini].substring(0,3)}/${d.ano_ini} → ${MESES[d.mes_fim].substring(0,3)}/${d.ano_fim}</td>
+        <td class="num">${fmt(d.total)}</td>
+        <td>${d.file_path?`<button class="btn sm" onclick="verComprovante('${d.file_path}','${descSafe}')"><i class="ti ti-paperclip"></i></button>`:'—'}</td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn sm" title="Editar" onclick="abrirEdicaoRecorrente('${d.id}')"><i class="ti ti-pencil"></i></button>
+          <button class="btn danger" title="Remover" onclick="remRecorrente('${d.id}')"><i class="ti ti-trash"></i></button>
+        </div></td>
+      </tr>`;
+    }).join('')+'</tbody></table>';
 }
 async function remRecorrente(id){if(!confirm('Remover?'))return;await sb.from('despesas_recorrentes').delete().eq('id',id);toast('Removida.');renderRecorrentes();}
+
+async function abrirEdicaoRecorrente(id){
+  const{data}=await sb.from('despesas_recorrentes').select('*').eq('id',id).single();
+  if(!data)return toast('Não encontrado.');
+  // Reutiliza o modal de edição adaptado
+  document.getElementById('edit-id').value=id;
+  document.getElementById('edit-table').value='despesas_recorrentes';
+  document.getElementById('edit-tipo').value=data.tipo;
+  document.getElementById('edit-desc').value=data.descricao||'';
+  document.getElementById('edit-valor').value=data.total||'';
+  document.getElementById('edit-mes').value=data.mes_ini;
+  document.getElementById('edit-ano').value=data.ano_ini;
+  // Atualiza label do modal
+  document.querySelector('#edit-overlay .modal-edit .modal-hd h2').textContent='Editar despesa recorrente';
+  document.getElementById('edit-overlay').classList.add('open');
+}
 
 // PROJEÇÕES
 async function addProjecao(){
@@ -1003,12 +1033,16 @@ async function renderFluxo(){
   };
 
   // Célula clicável quando admin e há dados
+  // Registra mapeamento global para os cliques do fluxo
+  window._fcTiposMap=keyToTipos;
+  window._fcAno=ano;
+
   const fcCell=(v,key,mes)=>{
     const tipos=keyToTipos[key];
     if(!isAdmin||!tipos||v===0)return fcN(v);
-    const tiposStr=JSON.stringify(tipos).replace(/"/g,"'");
     const cls=v>=0?'fc-col-pos':'fc-col-neg';
-    return`<span class="${cls} fc-clickable" onclick="openFluxoDetail(${JSON.stringify(tipos)},${mes},${ano})" title="Ver detalhamento">${fmtN(v)}</span>`;
+    const tiposEncoded=encodeURIComponent(JSON.stringify(tipos));
+    return`<span class="${cls} fc-clickable" onclick="handleFcClick('${key}',${mes})" title="Clique para ver detalhamento">${fmtN(v)}</span>`;
   };
 
   const rows=[
@@ -1053,20 +1087,32 @@ async function renderFluxo(){
     <div class="metric-card"><div class="metric-label">Melhor mês</div><div class="metric-value" style="font-size:16px">${MESES[melhorMes]}</div></div>`;
 }
 
+function handleFcClick(key,mes){
+  const tipos=window._fcTiposMap?window._fcTiposMap[key]:null;
+  const ano=window._fcAno||parseInt(document.getElementById('fc-ano').value)||2026;
+  if(!tipos)return;
+  openFluxoDetail(tipos,mes,ano);
+}
+
+// Armazena contexto do fluxo para o modal
+let _fluxoDetalhe={tipos:[],mes:0,ano:2026};
+
 async function openFluxoDetail(tipos, mes, ano){
+  _fluxoDetalhe={tipos,mes,ano};
   const all=(await getAllData(ano)).filter(i=>tipos.includes(i.tipo)&&(mes===0||i.mes===mes));
   const label=mes===0?`Acumulado ${ano}`:MESES[mes]+'/'+ano;
   const tiposLabel=tipos.map(t=>TIPOS_LABEL[t]).join(', ');
   document.getElementById('modal-title').textContent=tiposLabel+' — '+label;
   const total=all.reduce((a,b)=>a+b.valor,0);
-  const srcLabel={undefined:'Avulso',null:'Avulso',recorrente:'Recorrente',projecao:'Projeção'};
+  const srcLabel={'recorrente':'Recorrente','projecao':'Projeção'};
   document.getElementById('modal-content').innerHTML=!all.length
     ?'<div class="empty">Sem lançamentos para este período.</div>'
     :`<div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-size:12px;color:var(--text2)">${all.length} lançamento${all.length>1?'s':''}</span>
         <span style="font-size:13px;font-weight:600;color:var(--blue)">${fmt(total)}</span>
       </div>
-      <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:500px">
       <thead><tr style="border-bottom:1px solid var(--border)">
         <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Mês/Ano</th>
         <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Tipo</th>
@@ -1075,19 +1121,24 @@ async function openFluxoDetail(tipos, mes, ano){
         <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--text2)">Valor</th>
         <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Ações</th>
       </tr></thead><tbody>
-      ${all.map(i=>`<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:6px 8px">${MESES[i.mes]}/${i.ano}</td>
-        <td style="padding:6px 8px"><span class="badge ${i.tipo}" style="font-size:10px">${TIPOS_LABEL[i.tipo]}</span></td>
-        <td style="padding:6px 8px">${i.descricao||'—'}</td>
-        <td style="padding:6px 8px"><span class="badge proj">${srcLabel[i.source]||i.source||'Avulso'}</span></td>
-        <td style="padding:6px 8px" class="num">${fmt(i.valor)}</td>
-        <td style="padding:6px 8px"><div style="display:flex;gap:4px">
-          ${i.file_path?`<button class="btn sm" onclick="verComprovante('${i.file_path}','${i.descricao||''}')"><i class="ti ti-paperclip"></i></button>`:''}
-          ${!i.source||i.source==='Avulso'||i.source===undefined?`<button class="btn sm" onclick="abrirEdicao('lancamentos','${i.id}','${i.tipo}','${(i.descricao||'').replace(/'/g,"\'")}',${i.valor},${i.mes},${i.ano})"><i class="ti ti-pencil"></i></button>`:''}
-        </div></td>
-      </tr>`).join('')}
+      ${all.map((i,idx)=>{
+        const src=i.source?srcLabel[i.source]||'Avulso':'Avulso';
+        const podEditar=src==='Avulso';
+        const descSafe=(i.descricao||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
+        return`<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:6px 8px">${MESES[i.mes]}/${i.ano}</td>
+          <td style="padding:6px 8px"><span class="badge ${i.tipo}" style="font-size:10px">${TIPOS_LABEL[i.tipo]}</span></td>
+          <td style="padding:6px 8px">${i.descricao||'—'}</td>
+          <td style="padding:6px 8px"><span class="badge proj">${src}</span></td>
+          <td style="padding:6px 8px" class="num">${fmt(i.valor)}</td>
+          <td style="padding:6px 8px"><div style="display:flex;gap:4px">
+            ${i.file_path?`<button class="btn sm" onclick="verComprovante('${i.file_path}','${descSafe}')"><i class="ti ti-paperclip"></i></button>`:''}
+            ${podEditar&&i.id?`<button class="btn sm" onclick="abrirEdicao('lancamentos','${i.id}','${i.tipo}','${descSafe}',${i.valor},${i.mes},${i.ano})"><i class="ti ti-pencil"></i></button>`:''}
+          </div></td>
+        </tr>`;
+      }).join('')}
       <tr style="font-weight:700;background:var(--surface2)"><td colspan="4" style="padding:7px 8px">Total</td><td style="padding:7px 8px" class="num">${fmt(total)}</td><td></td></tr>
-      </tbody></table>`;
+      </tbody></table></div>`;
   document.getElementById('modal-overlay').classList.add('open');
 }
 
@@ -1498,6 +1549,90 @@ async function exportFluxoExcel(){
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Fluxo de Caixa');
   XLSX.writeFile(wb,`FluxoCaixa_${ano}.xlsx`);
+}
+
+// ── CATEGORIAS ────────────────────────────────────────────────
+let catCorSel='#185FA5';
+function selectCor(el,ctx){
+  document.querySelectorAll(`#color-grid-${ctx} .color-opt`).forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  if(ctx==='cat')catCorSel=el.dataset.cor;
+}
+async function addCategoria(){
+  const nome=document.getElementById('cat-nome').value.trim();
+  const tipo=document.getElementById('cat-tipo').value;
+  if(!nome)return alert('Informe o nome da categoria.');
+  const btn=document.getElementById('btn-add-cat');
+  btn.disabled=true;btn.innerHTML='<span class="spinner" style="border-top-color:var(--blue)"></span> Salvando...';
+  const{error}=await sb.from('categorias').insert({nome,tipo,cor:catCorSel,user_id:currentUser.id});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Adicionar';
+  if(error){
+    if(error.code==='42P01')return toast('Execute o SQL atualizar-banco.sql no Supabase primeiro.');
+    return toast('Erro: '+error.message);
+  }
+  document.getElementById('cat-nome').value='';
+  toast('Categoria adicionada!');renderCategorias();
+}
+async function renderCategorias(){
+  const el=document.getElementById('tabela-categorias');
+  el.innerHTML='<div class="empty">Carregando...</div>';
+  const{data,error}=await sb.from('categorias').select('*').order('tipo').order('nome');
+  if(error){
+    if(error.code==='42P01'){el.innerHTML='<div class="empty" style="color:var(--red-text)">Tabela não encontrada. Execute o SQL <b>atualizar-banco.sql</b> no Supabase.</div>';return;}
+    el.innerHTML='<div class="empty">Erro ao carregar.</div>';return;
+  }
+  if(!data?.length){el.innerHTML='<div class="empty">Nenhuma categoria. Adicione uma acima.</div>';return;}
+  const grupos={receita:'Receita operacional',deducao:'Dedução',custo:'Custo operacional',despesa_adm:'Despesa administrativa',despesa_com:'Despesa comercial',fin_rec:'Receita financeira',fin_desp:'Despesa financeira'};
+  let h='';
+  [...new Set(data.map(c=>c.tipo))].forEach(t=>{
+    const cats=data.filter(c=>c.tipo===t);
+    h+=`<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">${grupos[t]||t}</div>
+    ${cats.map(c=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="background:${c.cor};width:10px;height:10px;border-radius:50%;flex-shrink:0"></div>
+        <span style="font-size:13px">${c.nome}</span>
+      </div>
+      <button class="btn danger" onclick="remCategoria('${c.id}')"><i class="ti ti-trash"></i></button>
+    </div>`).join('')}</div>`;
+  });
+  el.innerHTML=h;
+}
+async function remCategoria(id){
+  if(!confirm('Remover esta categoria?'))return;
+  await sb.from('categorias').delete().eq('id',id);
+  toast('Removida.');renderCategorias();
+}
+
+// ── EDIÇÃO ────────────────────────────────────────────────────
+async function salvarEdicao(){
+  const id=document.getElementById('edit-id').value;
+  const table=document.getElementById('edit-table').value;
+  const tipo=document.getElementById('edit-tipo').value;
+  const descricao=document.getElementById('edit-desc').value.trim();
+  const valor=parseFloat(document.getElementById('edit-valor').value)||0;
+  const mes=parseInt(document.getElementById('edit-mes').value);
+  const ano=parseInt(document.getElementById('edit-ano').value)||2026;
+  if(!descricao)return alert('Informe a descrição.');
+  if(!valor)return alert('Informe o valor.');
+  let updateData={tipo,descricao,valor};
+  if(table==='lancamentos')updateData={...updateData,mes,ano};
+  if(table==='despesas_recorrentes'){
+    const{data:orig}=await sb.from('despesas_recorrentes').select('*').eq('id',id).single();
+    if(orig){
+      const novoValores={};
+      Object.keys(orig.valores_por_mes||{}).forEach(k=>novoValores[k]=valor);
+      updateData={tipo,descricao,valores_por_mes:novoValores,total:Object.values(novoValores).reduce((a,b)=>a+b,0)};
+    }
+  }
+  const{error}=await sb.from(table).update(updateData).eq('id',id);
+  if(error)return toast('Erro: '+error.message);
+  closeEdit(null,true);
+  const h2=document.querySelector('#edit-overlay .modal-edit .modal-hd h2');
+  if(h2)h2.textContent='Editar lançamento';
+  toast('Salvo com sucesso!');
+  if(table==='lancamentos')renderTabela();
+  if(table==='despesas_recorrentes')renderRecorrentes();
+  renderDRE();
 }
 
 init();
