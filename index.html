@@ -147,6 +147,22 @@ tr:hover td{background:var(--surface2)}
 .color-opt.selected{border-color:var(--text);transform:scale(1.15)}
 .edit-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;padding:16px}
 .edit-overlay.open{display:flex}
+.pwd-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:310;align-items:center;justify-content:center;padding:16px}
+.pwd-overlay.open{display:flex}
+.perm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:310;align-items:center;justify-content:center;padding:16px}
+.perm-overlay.open{display:flex}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border);font-size:13px}
+.toggle-row:last-child{border:none}
+.toggle-label{color:var(--text);font-size:13px}
+.toggle-sub{font-size:11px;color:var(--text2);margin-top:2px}
+.sw{position:relative;width:36px;height:20px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0}
+.sw-slider{position:absolute;cursor:pointer;inset:0;background:var(--border2);border-radius:20px;transition:.2s}
+.sw-slider:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.sw input:checked+.sw-slider{background:var(--blue)}
+.sw input:checked+.sw-slider:before{transform:translateX(16px)}
+.fc-clickable{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.fc-clickable:hover{opacity:.75}
 </style>
 </head>
 <body>
@@ -596,6 +612,46 @@ tr:hover td{background:var(--surface2)}
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- MODAL TROCAR SENHA -->
+<div class="pwd-overlay" id="pwd-overlay" onclick="closePwd(event)">
+  <div class="modal-edit" style="width:400px">
+    <div class="modal-hd">
+      <h2>Redefinir senha — <span id="pwd-user-name"></span></h2>
+      <button class="close-btn" onclick="closePwd(null,true)">×</button>
+    </div>
+    <input type="hidden" id="pwd-user-id"/>
+    <div class="info-box" style="margin-bottom:12px">
+      <i class="ti ti-info-circle" style="font-size:15px;flex-shrink:0"></i>
+      Para redefinir a senha de outro usuário, acesse <strong>Authentication → Users</strong> no painel do Supabase e clique em "Reset password".
+    </div>
+    <label class="first">Nova senha (mín. 6 caracteres)</label>
+    <input type="password" id="pwd-nova" placeholder="••••••••"/>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn primary" onclick="salvarNovaSenha()"><i class="ti ti-check"></i> Redefinir senha</button>
+      <button class="btn" onclick="closePwd(null,true)">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PERMISSÕES -->
+<div class="perm-overlay" id="perm-overlay" onclick="closePerm(event)">
+  <div class="modal-edit" style="width:480px">
+    <div class="modal-hd">
+      <h2><i class="ti ti-shield" style="margin-right:6px"></i>Permissões — <span id="perm-user-name"></span></h2>
+      <button class="close-btn" onclick="closePerm(null,true)">×</button>
+    </div>
+    <div class="info-box" style="margin-bottom:12px">
+      <i class="ti ti-info-circle" style="font-size:15px;flex-shrink:0"></i>
+      Controle quais abas e ações este usuário pode acessar no sistema.
+    </div>
+    <div id="perm-grid"></div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn primary" onclick="salvarPermissoes()"><i class="ti ti-check"></i> Salvar permissões</button>
+      <button class="btn" onclick="closePerm(null,true)">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL EDITAR LANÇAMENTO -->
 <div class="edit-overlay" id="edit-overlay" onclick="closeEdit(event)">
   <div class="modal-edit">
@@ -912,8 +968,8 @@ async function renderFluxo(){
   const ano=parseInt(document.getElementById('fc-ano').value)||2026;
   document.getElementById('fluxo-content').innerHTML='<div class="empty">Carregando...</div>';
   const all=await getAllData(ano);
+  const isAdmin=currentRole==='admin';
 
-  // Agrupar por mês
   const porMes={};
   for(let m=1;m<=12;m++){
     const items=all.filter(i=>i.mes===m);
@@ -926,13 +982,34 @@ async function renderFluxo(){
     porMes[m]={rec,ded,recLiq,cus,lb,dc,da,desp,lop,fr,fd,res};
   }
 
-  // Saldo acumulado
   let acum=0;
   const acums={};
   for(let m=1;m<=12;m++){acum+=porMes[m].res;acums[m]=acum;}
 
   const cols=Array.from({length:12},(_,i)=>i+1);
-  const fcN=(v,m)=>{if(v===0)return`<span style="color:var(--text3)">—</span>`;const cls=v>=0?'fc-col-pos':'fc-col-neg';return`<span class="${cls}">${fmtN(v)}</span>`;};
+
+  // Mapeamento chave → tipo(s) DRE para detalhamento
+  const keyToTipos={
+    rec:['receita'], ded:['deducao'], recLiq:['receita','deducao'],
+    cus:['custo'], dc:['despesa_com'], da:['despesa_adm'],
+    desp:['despesa_com','despesa_adm'], lop:['receita','deducao','custo','despesa_com','despesa_adm'],
+    fr:['fin_rec'], fd:['fin_desp'], res:null
+  };
+
+  const fcN=(v)=>{
+    if(v===0)return`<span style="color:var(--text3)">—</span>`;
+    const cls=v>=0?'fc-col-pos':'fc-col-neg';
+    return`<span class="${cls}">${fmtN(v)}</span>`;
+  };
+
+  // Célula clicável quando admin e há dados
+  const fcCell=(v,key,mes)=>{
+    const tipos=keyToTipos[key];
+    if(!isAdmin||!tipos||v===0)return fcN(v);
+    const tiposStr=JSON.stringify(tipos).replace(/"/g,"'");
+    const cls=v>=0?'fc-col-pos':'fc-col-neg';
+    return`<span class="${cls} fc-clickable" onclick="openFluxoDetail(${JSON.stringify(tipos)},${mes},${ano})" title="Ver detalhamento">${fmtN(v)}</span>`;
+  };
 
   const rows=[
     {label:'ENTRADAS',cls:'fc-grp',key:null},
@@ -950,21 +1027,22 @@ async function renderFluxo(){
     {label:'(−) Despesas financeiras',cls:'fc-sub',key:'fd',neg:true},
   ];
 
-  const thead=`<tr><th style="text-align:left;position:sticky;left:0;background:#fff;min-width:180px">Categoria</th>${cols.map(m=>`<th>${MESES[m].substring(0,3)}</th>`).join('')}<th>Total</th></tr>`;
+  const hint=isAdmin?'<div style="font-size:12px;color:var(--text2);margin-bottom:8px"><i class="ti ti-info-circle"></i> Clique em qualquer valor sublinhado para ver o detalhamento</div>':'';
+  const thead=`<tr><th style="text-align:left;position:sticky;left:0;background:#fff;min-width:200px">Categoria</th>${cols.map(m=>`<th>${MESES[m].substring(0,3)}</th>`).join('')}<th>Total</th></tr>`;
   const tbody=rows.map(r=>{
     if(!r.key)return`<tr class="${r.cls}"><td>${r.label}</td>${cols.map(()=>'<td></td>').join('')}<td></td></tr>`;
     const total=cols.reduce((s,m)=>s+(porMes[m][r.key]||0),0);
-    const displayVal=(v,m)=>r.neg?fcN(-Math.abs(v),m):fcN(v,m);
-    return`<tr class="${r.cls}"><td>${r.label}</td>${cols.map(m=>`<td>${displayVal(porMes[m][r.key],m)}</td>`).join('')}<td>${r.neg?fcN(-Math.abs(total),0):fcN(total,0)}</td></tr>`;
+    const dispV=(v,key,mes)=>r.neg?fcCell(-Math.abs(v),key,mes):fcCell(v,key,mes);
+    const totalDisp=r.neg?fcN(-Math.abs(total)):fcN(total);
+    return`<tr class="${r.cls}"><td>${r.label}</td>${cols.map(m=>`<td>${dispV(porMes[m][r.key],r.key,m)}</td>`).join('')}<td>${totalDisp}</td></tr>`;
   }).join('');
 
   const totalAnual=cols.reduce((s,m)=>s+porMes[m].res,0);
-  const saldoRow=`<tr class="fc-saldo"><td>SALDO DO PERÍODO</td>${cols.map(m=>`<td>${fcN(porMes[m].res,m)}</td>`).join('')}<td>${fcN(totalAnual,0)}</td></tr>`;
-  const acumRow=`<tr class="fc-acum"><td>Saldo acumulado</td>${cols.map(m=>`<td>${fcN(acums[m],m)}</td>`).join('')}<td></td></tr>`;
+  const saldoRow=`<tr class="fc-saldo"><td>SALDO DO PERÍODO</td>${cols.map(m=>`<td>${fcN(porMes[m].res)}</td>`).join('')}<td>${fcN(totalAnual)}</td></tr>`;
+  const acumRow=`<tr class="fc-acum"><td>Saldo acumulado</td>${cols.map(m=>`<td>${fcN(acums[m])}</td>`).join('')}<td></td></tr>`;
 
-  document.getElementById('fluxo-content').innerHTML=`<table class="fc-tbl"><thead>${thead}</thead><tbody>${tbody}${saldoRow}${acumRow}</tbody></table>`;
+  document.getElementById('fluxo-content').innerHTML=hint+`<table class="fc-tbl"><thead>${thead}</thead><tbody>${tbody}${saldoRow}${acumRow}</tbody></table>`;
 
-  // Resumo anual cards
   const recTotal=cols.reduce((s,m)=>s+porMes[m].rec,0);
   const despTotal=cols.reduce((s,m)=>s+porMes[m].desp+porMes[m].cus,0);
   const melhorMes=cols.reduce((best,m)=>porMes[m].res>porMes[best].res?m:best,1);
@@ -972,7 +1050,45 @@ async function renderFluxo(){
     <div class="metric-card"><div class="metric-label">Total entradas ${ano}</div><div class="metric-value pos">${fmt(recTotal)}</div></div>
     <div class="metric-card"><div class="metric-label">Total saídas ${ano}</div><div class="metric-value neg">${fmt(despTotal)}</div></div>
     <div class="metric-card"><div class="metric-label">Resultado anual</div><div class="metric-value ${totalAnual>=0?'pos':'neg'}">${fmtN(totalAnual)}</div></div>
-    <div class="metric-card"><div class="metric-label">Melhor mês</div><div class="metric-value" style="font-size:16px">${MESES[melhorMes]} ${fcN(porMes[melhorMes].res,melhorMes)}</div></div>`;
+    <div class="metric-card"><div class="metric-label">Melhor mês</div><div class="metric-value" style="font-size:16px">${MESES[melhorMes]}</div></div>`;
+}
+
+async function openFluxoDetail(tipos, mes, ano){
+  const all=(await getAllData(ano)).filter(i=>tipos.includes(i.tipo)&&(mes===0||i.mes===mes));
+  const label=mes===0?`Acumulado ${ano}`:MESES[mes]+'/'+ano;
+  const tiposLabel=tipos.map(t=>TIPOS_LABEL[t]).join(', ');
+  document.getElementById('modal-title').textContent=tiposLabel+' — '+label;
+  const total=all.reduce((a,b)=>a+b.valor,0);
+  const srcLabel={undefined:'Avulso',null:'Avulso',recorrente:'Recorrente',projecao:'Projeção'};
+  document.getElementById('modal-content').innerHTML=!all.length
+    ?'<div class="empty">Sem lançamentos para este período.</div>'
+    :`<div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:var(--text2)">${all.length} lançamento${all.length>1?'s':''}</span>
+        <span style="font-size:13px;font-weight:600;color:var(--blue)">${fmt(total)}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Mês/Ano</th>
+        <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Tipo</th>
+        <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Descrição</th>
+        <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Origem</th>
+        <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--text2)">Valor</th>
+        <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Ações</th>
+      </tr></thead><tbody>
+      ${all.map(i=>`<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:6px 8px">${MESES[i.mes]}/${i.ano}</td>
+        <td style="padding:6px 8px"><span class="badge ${i.tipo}" style="font-size:10px">${TIPOS_LABEL[i.tipo]}</span></td>
+        <td style="padding:6px 8px">${i.descricao||'—'}</td>
+        <td style="padding:6px 8px"><span class="badge proj">${srcLabel[i.source]||i.source||'Avulso'}</span></td>
+        <td style="padding:6px 8px" class="num">${fmt(i.valor)}</td>
+        <td style="padding:6px 8px"><div style="display:flex;gap:4px">
+          ${i.file_path?`<button class="btn sm" onclick="verComprovante('${i.file_path}','${i.descricao||''}')"><i class="ti ti-paperclip"></i></button>`:''}
+          ${!i.source||i.source==='Avulso'||i.source===undefined?`<button class="btn sm" onclick="abrirEdicao('lancamentos','${i.id}','${i.tipo}','${(i.descricao||'').replace(/'/g,"\'")}',${i.valor},${i.mes},${i.ano})"><i class="ti ti-pencil"></i></button>`:''}
+        </div></td>
+      </tr>`).join('')}
+      <tr style="font-weight:700;background:var(--surface2)"><td colspan="4" style="padding:7px 8px">Total</td><td style="padding:7px 8px" class="num">${fmt(total)}</td><td></td></tr>
+      </tbody></table>`;
+  document.getElementById('modal-overlay').classList.add('open');
 }
 
 // DETALHAMENTO DRE
@@ -1093,9 +1209,125 @@ async function renderUsuarios(){
   const{data}=await sb.from('user_profiles').select('*').order('name');
   const el=document.getElementById('tabela-usuarios');
   if(!data?.length){el.innerHTML='<div class="empty">Nenhum usuário.</div>';return;}
-  el.innerHTML=`<table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Ações</th></tr></thead><tbody>`+
-    data.map(u=>`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="user-avatar" style="width:28px;height:28px;font-size:11px">${(u.name||'?').charAt(0).toUpperCase()}</div>${u.name||'—'}</div></td><td style="color:var(--text2)">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'admin-role':'viewer-role'}">${u.role==='admin'?'Administrador':'Visualizador'}</span></td><td><div style="display:flex;gap:6px">${u.id!==currentUser.id?`<button class="btn sm" onclick="toggleRole('${u.id}','${u.role}')"><i class="ti ti-switch-horizontal"></i> Trocar perfil</button><button class="btn danger" onclick="remUsuario('${u.id}')"><i class="ti ti-trash"></i></button>`:'<span style="font-size:11px;color:var(--text3)">Você</span>'}</div></td></tr>`).join('')+'</tbody></table>';
+
+  // Minha troca de senha (qualquer usuário)
+  const minhaSenhaBtn=`<div style="margin-bottom:14px;padding:12px 14px;background:var(--blue-bg);border-radius:var(--radius);border:0.5px solid var(--border)">
+    <div style="font-size:12px;font-weight:600;color:var(--blue-text);margin-bottom:8px"><i class="ti ti-lock"></i> Alterar minha senha</div>
+    <div class="form-row cols2" style="gap:8px">
+      <input type="password" id="minha-senha-nova" placeholder="Nova senha (mín. 6 caracteres)" style="font-size:12px"/>
+      <button class="btn primary" style="padding:6px 10px;font-size:12px" onclick="trocarMinhaSenha()"><i class="ti ti-check"></i> Salvar</button>
+    </div>
+  </div>`;
+
+  el.innerHTML=minhaSenhaBtn+`<table><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Ações</th></tr></thead><tbody>`+
+    data.map(u=>`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="user-avatar" style="width:28px;height:28px;font-size:11px">${(u.name||'?').charAt(0).toUpperCase()}</div>
+        <div><div style="font-size:13px">${u.name||'—'}</div>
+        ${u.id===currentUser.id?'<div style="font-size:10px;color:var(--blue)">Você</div>':''}
+        </div>
+      </div></td>
+      <td style="color:var(--text2);font-size:12px">${u.email||'—'}</td>
+      <td><span class="badge ${u.role==='admin'?'admin-role':'viewer-role'}">${u.role==='admin'?'Administrador':'Visualizador'}</span></td>
+      <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+        ${u.id!==currentUser.id?`
+          <button class="btn sm" title="Trocar perfil" onclick="toggleRole('${u.id}','${u.role}')"><i class="ti ti-switch-horizontal"></i></button>
+          <button class="btn sm" title="Redefinir senha" onclick="abrirTrocarSenha('${u.id}','${u.name||u.email}')"><i class="ti ti-key"></i></button>
+          <button class="btn sm" title="Permissões de tela" onclick="abrirPermissoes('${u.id}','${u.name||u.email}')"><i class="ti ti-shield"></i></button>
+          <button class="btn danger" title="Remover" onclick="remUsuario('${u.id}')"><i class="ti ti-trash"></i></button>
+        `:''}
+      </div></td>
+    </tr>`).join('')+'</tbody></table>';
 }
+
+async function trocarMinhaSenha(){
+  const nova=document.getElementById('minha-senha-nova').value;
+  if(!nova||nova.length<6)return alert('Senha mínima de 6 caracteres.');
+  const{error}=await sb.auth.updateUser({password:nova});
+  if(error)return toast('Erro: '+error.message);
+  document.getElementById('minha-senha-nova').value='';
+  toast('Senha alterada com sucesso!');
+}
+
+function abrirTrocarSenha(userId, userName){
+  document.getElementById('pwd-user-id').value=userId;
+  document.getElementById('pwd-user-name').textContent=userName;
+  document.getElementById('pwd-nova').value='';
+  document.getElementById('pwd-overlay').classList.add('open');
+}
+
+async function salvarNovaSenha(){
+  const userId=document.getElementById('pwd-user-id').value;
+  const nova=document.getElementById('pwd-nova').value;
+  if(!nova||nova.length<6)return alert('Senha mínima de 6 caracteres.');
+  // Admin redefine via SQL — usa service role não disponível no client
+  // Solução: atualizar via tabela de reset_requests ou orientar uso do Supabase dashboard
+  // Por segurança, admin só pode redefinir via Supabase dashboard
+  // Mas podemos usar o updateUser se o admin estiver logado como o usuário
+  // A melhor prática: gerar um link de reset via email
+  const{error}=await sb.auth.admin?.updateUserById
+    ? sb.auth.admin.updateUserById(userId,{password:nova})
+    : {error:{message:'Use o painel do Supabase para redefinir senhas de outros usuários.'}};
+  if(error){
+    // Alternativa: salvar senha temporária na tabela para o usuário trocar no próximo login
+    toast('Para redefinir senha de outro usuário, acesse Authentication > Users no Supabase.');
+    closePwd(null,true);
+    return;
+  }
+  closePwd(null,true);
+  toast('Senha redefinida!');
+}
+
+function closePwd(e,force){if(force||e?.target===document.getElementById('pwd-overlay'))document.getElementById('pwd-overlay').classList.remove('open');}
+
+// PERMISSÕES DE USUÁRIO
+let permUserId=null;
+const ABAS_CONFIG=[
+  {key:'ver_dre',label:'Ver DRE',sub:'Acesso à aba DRE',default:true,lockAdmin:true},
+  {key:'ver_fluxo',label:'Ver Fluxo de Caixa',sub:'Acesso à aba Fluxo de Caixa',default:true},
+  {key:'ver_graficos',label:'Ver Gráficos',sub:'Acesso à aba Gráficos',default:true},
+  {key:'ver_lancamentos',label:'Ver Lançamentos',sub:'Acesso à aba de lançamentos avulsos',default:false},
+  {key:'editar_lancamentos',label:'Editar lançamentos',sub:'Pode adicionar, editar e remover lançamentos',default:false},
+  {key:'ver_recorrentes',label:'Ver Fixas/Variáveis',sub:'Acesso às despesas recorrentes',default:false},
+  {key:'editar_recorrentes',label:'Editar fixas/variáveis',sub:'Pode cadastrar e remover despesas recorrentes',default:false},
+  {key:'ver_projecao',label:'Ver Projeção',sub:'Acesso à aba de projeções',default:false},
+  {key:'editar_projecao',label:'Editar projeções',sub:'Pode cadastrar e remover projeções',default:false},
+];
+
+async function abrirPermissoes(userId, userName){
+  permUserId=userId;
+  document.getElementById('perm-user-name').textContent=userName;
+  // Carregar permissões salvas
+  const{data}=await sb.from('user_profiles').select('permissoes').eq('id',userId).single();
+  const perms=data?.permissoes||{};
+  const grid=document.getElementById('perm-grid');
+  grid.innerHTML=ABAS_CONFIG.map(a=>`
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">${a.label}${a.lockAdmin?'<span style="font-size:10px;color:var(--text3);margin-left:6px">(sempre ativo)</span>':''}</div>
+        <div class="toggle-sub">${a.sub}</div>
+      </div>
+      <label class="sw">
+        <input type="checkbox" id="perm-${a.key}" ${a.lockAdmin||perms[a.key]!==undefined?perms[a.key]||a.lockAdmin?'checked':'':a.default?'checked':''} ${a.lockAdmin?'disabled':''}>
+        <span class="sw-slider"></span>
+      </label>
+    </div>`).join('');
+  document.getElementById('perm-overlay').classList.add('open');
+}
+
+async function salvarPermissoes(){
+  const perms={};
+  ABAS_CONFIG.forEach(a=>{
+    perms[a.key]=a.lockAdmin?true:document.getElementById('perm-'+a.key).checked;
+  });
+  const{error}=await sb.from('user_profiles').update({permissoes:perms}).eq('id',permUserId);
+  if(error)return toast('Erro: '+error.message);
+  closePerm(null,true);
+  toast('Permissões salvas!');
+}
+
+function closePerm(e,force){if(force||e?.target===document.getElementById('perm-overlay'))document.getElementById('perm-overlay').classList.remove('open');}
+
 async function toggleRole(id,current){const newRole=current==='admin'?'viewer':'admin';await sb.from('user_profiles').update({role:newRole}).eq('id',id);toast('Perfil alterado.');renderUsuarios();}
 async function remUsuario(id){if(!confirm('Remover?'))return;await sb.from('user_profiles').delete().eq('id',id);toast('Removido.');renderUsuarios();}
 
