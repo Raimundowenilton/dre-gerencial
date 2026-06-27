@@ -656,7 +656,7 @@ tr:hover td{background:var(--surface2)}
 <div class="edit-overlay" id="edit-overlay" onclick="closeEdit(event)">
   <div class="modal-edit">
     <div class="modal-hd">
-      <h2>Editar lançamento</h2>
+      <h2 id="edit-modal-title">Editar lançamento</h2>
       <button class="close-btn" onclick="closeEdit(null,true)">×</button>
     </div>
     <input type="hidden" id="edit-id"/>
@@ -924,16 +924,16 @@ async function remRecorrente(id){if(!confirm('Remover?'))return;await sb.from('d
 async function abrirEdicaoRecorrente(id){
   const{data}=await sb.from('despesas_recorrentes').select('*').eq('id',id).single();
   if(!data)return toast('Não encontrado.');
-  // Reutiliza o modal de edição adaptado
   document.getElementById('edit-id').value=id;
   document.getElementById('edit-table').value='despesas_recorrentes';
   document.getElementById('edit-tipo').value=data.tipo;
   document.getElementById('edit-desc').value=data.descricao||'';
-  document.getElementById('edit-valor').value=data.total||'';
+  // Para recorrente mostra valor unitário (total / parcelas)
+  const valorUnit=data.parcelas>0?(data.total/data.parcelas):data.total;
+  document.getElementById('edit-valor').value=valorUnit.toFixed(2);
   document.getElementById('edit-mes').value=data.mes_ini;
   document.getElementById('edit-ano').value=data.ano_ini;
-  // Atualiza label do modal
-  document.querySelector('#edit-overlay .modal-edit .modal-hd h2').textContent='Editar despesa recorrente';
+  document.getElementById('edit-modal-title').textContent='Editar despesa recorrente';
   document.getElementById('edit-overlay').classList.add('open');
 }
 
@@ -1384,6 +1384,13 @@ async function remUsuario(id){if(!confirm('Remover?'))return;await sb.from('user
 
 function closeModal(e,force){if(force||e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('open');}
 function closeRecibo(e,force){if(force||e.target===document.getElementById('recibo-overlay'))document.getElementById('recibo-overlay').classList.remove('open');}
+function closeEdit(e,force){
+  if(force||e?.target===document.getElementById('edit-overlay')){
+    document.getElementById('edit-overlay').classList.remove('open');
+    const t=document.getElementById('edit-modal-title');
+    if(t)t.textContent='Editar lançamento';
+  }
+}
 
 // GRÁFICOS
 let chartRD=null,chartRes=null,chartAcum=null;
@@ -1627,8 +1634,7 @@ async function salvarEdicao(){
   const{error}=await sb.from(table).update(updateData).eq('id',id);
   if(error)return toast('Erro: '+error.message);
   closeEdit(null,true);
-  const h2=document.querySelector('#edit-overlay .modal-edit .modal-hd h2');
-  if(h2)h2.textContent='Editar lançamento';
+  document.getElementById('edit-modal-title').textContent='Editar lançamento';
   toast('Salvo com sucesso!');
   if(table==='lancamentos')renderTabela();
   if(table==='despesas_recorrentes')renderRecorrentes();
