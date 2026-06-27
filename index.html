@@ -905,9 +905,20 @@ async function renderTabela(){
   const{data,error}=await q;
   const el=document.getElementById('tabela-lancamentos');
   if(error||!data?.length){el.innerHTML='<div class="empty">Nenhum lançamento para este período.</div>';updateSummary([]);return;}
+    _editableRecords = data.map(l => ({table:'lancamentos',id:l.id,tipo:l.tipo,descricao:l.descricao||'',valor:l.valor,mes:l.mes,ano:l.ano}));
   el.innerHTML=`<table><thead><tr><th>Mês/Ano</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor</th><th>Recibo</th><th></th></tr></thead><tbody>`+
-    data.map(l=>`<tr><td>${MESES[l.mes]}/${l.ano}</td><td><span class="badge ${l.tipo}">${TIPOS_LABEL[l.tipo]}</span></td><td>${l.descricao}</td><td class="num">${fmt(l.valor)}</td><td>${l.file_path?`<button class="btn sm" onclick="verComprovante('${l.file_path}','${l.descricao}')"><i class="ti ti-paperclip"></i></button>`:'—'}</td><td style="display:flex;gap:4px"><button class="btn sm" onclick="abrirEdicao('lancamentos','${l.id}','${l.tipo}','${(l.descricao||'').replace(/'/g,"\\'")}',${l.valor},${l.mes},${l.ano})"><i class="ti ti-pencil"></i></button><button class="btn danger" onclick="remLancamento('${l.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('')+'</tbody></table>';
-  updateSummary(data);
+    data.map((l,idx)=>`<tr>
+      <td>${MESES[l.mes]}/${l.ano}</td>
+      <td><span class="badge ${l.tipo}">${TIPOS_LABEL[l.tipo]}</span></td>
+      <td>${l.descricao||'—'}</td>
+      <td class="num">${fmt(l.valor)}</td>
+      <td>${l.file_path?\`<button class="btn sm" onclick="verComprovante('${l.file_path}','${(l.descricao||'').replace(/'/g,"\\'")}')"><i class="ti ti-paperclip"></i></button>\`:'—'}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn sm" onclick="abrirEdicaoIdx(${idx})" title="Editar"><i class="ti ti-pencil"></i></button>
+        <button class="btn danger" onclick="remLancamento('${l.id}')"><i class="ti ti-trash"></i></button>
+      </td>
+    </tr>`).join('')+'</tbody></table>';
+updateSummary(data);
 }
 async function remLancamento(id){if(!confirm('Remover?'))return;await sb.from('lancamentos').delete().eq('id',id);toast('Removido.');renderTabela();}
 function updateSummary(data){
@@ -998,16 +1009,16 @@ async function remRecorrente(id){if(!confirm('Remover?'))return;await sb.from('d
 async function abrirEdicaoRecorrente(id){
   const{data}=await sb.from('despesas_recorrentes').select('*').eq('id',id).single();
   if(!data)return toast('Não encontrado.');
-  document.getElementById('edit-id').value=id;
-  document.getElementById('edit-table').value='despesas_recorrentes';
-  document.getElementById('edit-tipo').value=data.tipo;
-  document.getElementById('edit-desc').value=data.descricao||'';
-  // Para recorrente mostra valor unitário (total / parcelas)
-  const valorUnit=data.parcelas>0?(data.total/data.parcelas):data.total;
-  document.getElementById('edit-valor').value=valorUnit.toFixed(2);
-  document.getElementById('edit-mes').value=data.mes_ini;
-  document.getElementById('edit-ano').value=data.ano_ini;
-  document.getElementById('edit-modal-title').textContent='Editar despesa recorrente';
+  const valorUnit = data.parcelas > 0 ? (data.total / data.parcelas) : data.total;
+  _editRecord = {table:'despesas_recorrentes', id, tipo:data.tipo, descricao:data.descricao, valor:valorUnit, mes:data.mes_ini, ano:data.ano_ini};
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-table').value = 'despesas_recorrentes';
+  document.getElementById('edit-tipo').value = data.tipo;
+  document.getElementById('edit-desc').value = data.descricao || '';
+  document.getElementById('edit-valor').value = valorUnit.toFixed(2);
+  document.getElementById('edit-mes').value = data.mes_ini;
+  document.getElementById('edit-ano').value = data.ano_ini;
+  document.getElementById('edit-modal-title').textContent = 'Editar despesa recorrente';
   document.getElementById('edit-overlay').classList.add('open');
 }
 
@@ -1048,14 +1059,15 @@ async function remProjecao(id){if(!confirm('Remover?'))return;await sb.from('pro
 async function abrirEdicaoProjecao(id){
   const{data}=await sb.from('projecoes').select('*').eq('id',id).single();
   if(!data)return toast('Não encontrado.');
-  document.getElementById('edit-id').value=id;
-  document.getElementById('edit-table').value='projecoes';
-  document.getElementById('edit-tipo').value=data.tipo;
-  document.getElementById('edit-desc').value=data.descricao||'';
-  document.getElementById('edit-valor').value=data.valor||'';
-  document.getElementById('edit-mes').value=data.mes_ini||1;
-  document.getElementById('edit-ano').value=data.ano||2026;
-  document.getElementById('edit-modal-title').textContent='Editar projeção';
+  _editRecord = {table:'projecoes', id, tipo:data.tipo, descricao:data.descricao, valor:data.valor, mes:data.mes_ini, ano:data.ano};
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-table').value = 'projecoes';
+  document.getElementById('edit-tipo').value = data.tipo;
+  document.getElementById('edit-desc').value = data.descricao || '';
+  document.getElementById('edit-valor').value = data.valor || '';
+  document.getElementById('edit-mes').value = data.mes_ini || 1;
+  document.getElementById('edit-ano').value = data.ano || 2026;
+  document.getElementById('edit-modal-title').textContent = 'Editar projeção (Budget)';
   document.getElementById('edit-overlay').classList.add('open');
 }
 
@@ -1662,16 +1674,28 @@ async function exportFluxoExcel(){
 }
 
 // ── EDIÇÃO MODAL GERAL ───────────────────────────────────────
+// Armazena registro atual para edição (evita corrupção de dados no onclick)
+let _editRecord = null;
+
 function abrirEdicao(table, id, tipo, descricao, valor, mes, ano){
-  document.getElementById('edit-id').value=id;
-  document.getElementById('edit-table').value=table;
-  document.getElementById('edit-tipo').value=tipo;
-  document.getElementById('edit-desc').value=descricao||'';
-  document.getElementById('edit-valor').value=valor||'';
-  document.getElementById('edit-mes').value=mes||1;
-  document.getElementById('edit-ano').value=ano||2026;
-  document.getElementById('edit-modal-title').textContent='Editar lançamento';
+  _editRecord = {table, id, tipo, descricao, valor, mes, ano};
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-table').value = table;
+  document.getElementById('edit-tipo').value = tipo || 'receita';
+  document.getElementById('edit-desc').value = descricao || '';
+  document.getElementById('edit-valor').value = valor || '';
+  document.getElementById('edit-mes').value = mes || 1;
+  document.getElementById('edit-ano').value = ano || 2026;
+  document.getElementById('edit-modal-title').textContent = 'Editar lançamento';
   document.getElementById('edit-overlay').classList.add('open');
+}
+
+// Versão que recebe index de um array (para registros com chars especiais)
+let _editableRecords = [];
+function abrirEdicaoIdx(idx){
+  const r = _editableRecords[idx];
+  if(!r) return toast('Registro não encontrado.');
+  abrirEdicao(r.table, r.id, r.tipo, r.descricao, r.valor, r.mes, r.ano);
 }
 
 // ── CATEGORIAS ────────────────────────────────────────────────
@@ -1728,33 +1752,48 @@ async function remCategoria(id){
 
 // ── EDIÇÃO ────────────────────────────────────────────────────
 async function salvarEdicao(){
-  const id=document.getElementById('edit-id').value;
-  const table=document.getElementById('edit-table').value;
-  const tipo=document.getElementById('edit-tipo').value;
-  const descricao=document.getElementById('edit-desc').value.trim();
-  const valor=parseFloat(document.getElementById('edit-valor').value)||0;
-  const mes=parseInt(document.getElementById('edit-mes').value);
-  const ano=parseInt(document.getElementById('edit-ano').value)||2026;
-  if(!descricao)return alert('Informe a descrição.');
-  if(!valor)return alert('Informe o valor.');
-  let updateData={tipo,descricao:descricao,valor:valor};
-  if(table==='lancamentos')updateData={tipo:tipo,descricao:descricao,valor:valor,mes:mes,ano:ano};
-  if(table==='projecoes')updateData={tipo,descricao:descricao,valor,mes_ini:mes,mes_fim:mes,ano};
-  if(table==='despesas_recorrentes'){
-    const{data:orig}=await sb.from('despesas_recorrentes').select('*').eq('id',id).single();
+  // Usar _editRecord para garantir id e table corretos
+  const id = _editRecord ? _editRecord.id : document.getElementById('edit-id').value;
+  const table = _editRecord ? _editRecord.table : document.getElementById('edit-table').value;
+
+  // Pegar valores frescos do formulário
+  const tipo = document.getElementById('edit-tipo').value;
+  const descricao = document.getElementById('edit-desc').value.trim();
+  const valorStr = document.getElementById('edit-valor').value;
+  const valor = parseFloat(valorStr) || 0;
+  const mes = parseInt(document.getElementById('edit-mes').value);
+  const ano = parseInt(document.getElementById('edit-ano').value) || 2026;
+
+  if(!id || !table) return toast('Erro interno: registro não identificado.');
+  if(!descricao) return alert('Informe a descrição.');
+  if(!valor) return alert('Informe o valor.');
+
+  let updateData = {};
+
+  if(table === 'lancamentos'){
+    updateData = { tipo: tipo, descricao: descricao, valor: valor, mes: mes, ano: ano };
+  } else if(table === 'projecoes'){
+    updateData = { tipo: tipo, descricao: descricao, valor: valor, mes_ini: mes, mes_fim: mes, ano: ano };
+  } else if(table === 'despesas_recorrentes'){
+    const { data: orig } = await sb.from('despesas_recorrentes').select('*').eq('id', id).single();
     if(orig){
-      const novoValores={};
-      Object.keys(orig.valores_por_mes||{}).forEach(k=>novoValores[k]=valor);
-      updateData={tipo,descricao,valores_por_mes:novoValores,total:Object.values(novoValores).reduce((a,b)=>a+b,0)};
+      const novoValores = {};
+      Object.keys(orig.valores_por_mes || {}).forEach(k => novoValores[k] = valor);
+      updateData = { tipo: tipo, descricao: descricao, valores_por_mes: novoValores, total: Object.values(novoValores).reduce((a,b)=>a+b,0) };
     }
   }
-  const{error}=await sb.from(table).update(updateData).eq('id',id);
-  if(error)return toast('Erro: '+error.message);
-  closeEdit(null,true);
+
+  console.log('Saving:', table, id, updateData); // debug
+
+  const { error } = await sb.from(table).update(updateData).eq('id', id);
+  if(error){ toast('Erro: ' + error.message); console.error(error); return; }
+
+  _editRecord = null;
+  closeEdit(null, true);
   toast('Salvo com sucesso!');
-  if(table==='lancamentos')renderTabela();
-  if(table==='despesas_recorrentes')renderRecorrentes();
-  if(table==='projecoes')renderProjecoes();
+  if(table === 'lancamentos') renderTabela();
+  if(table === 'despesas_recorrentes') renderRecorrentes();
+  if(table === 'projecoes') renderProjecoes();
   renderDRE();
 }
 
