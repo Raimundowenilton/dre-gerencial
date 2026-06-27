@@ -117,19 +117,19 @@ tr:hover td{background:#1e2229}
 /* FLUXO DE CAIXA */
 .fc-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:900px}
 .fc-tbl th{padding:7px 8px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);font-weight:600;text-align:right;white-space:nowrap}
-.fc-tbl th:first-child{text-align:left;min-width:180px;position:sticky;left:0;background:#fff;z-index:1}
-.fc-tbl td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
-.fc-tbl td:first-child{text-align:left;position:sticky;left:0;background:#fff;z-index:1;font-size:12px}
+.fc-tbl th:first-child{text-align:left;min-width:200px;position:sticky;left:0;background:#161920;z-index:2}
+.fc-tbl td{padding:6px 8px;border-bottom:1px solid #1e2229;text-align:right;white-space:nowrap}
+.fc-tbl td:first-child{text-align:left;position:sticky;left:0;background:#161920;z-index:1;font-size:12px}
 .fc-tbl tr.fc-grp td{font-weight:700;background:#1e2229;color:#00e676}
-.fc-tbl tr.fc-grp td:first-child{background:#1e2229;color:#00e676}
+.fc-tbl tr.fc-grp td:first-child{background:#1e2229;color:#00e676;position:sticky;left:0;z-index:1}
 .fc-tbl tr.fc-sub td{color:var(--text2);font-size:11px}
 .fc-tbl tr.fc-sub td:first-child{padding-left:20px}
 .fc-tbl tr.fc-total td{font-weight:700;border-top:1px solid #00e67630;background:#0d1a12}
-.fc-tbl tr.fc-total td:first-child{background:#0d1a12}
+.fc-tbl tr.fc-total td:first-child{background:#0d1a12;position:sticky;left:0;z-index:1}
 .fc-tbl tr.fc-saldo td{font-weight:700;font-size:13px;background:#0a2e1a;color:#00e676}
-.fc-tbl tr.fc-saldo td:first-child{background:#0a2e1a;color:#00e676}
+.fc-tbl tr.fc-saldo td:first-child{background:#0a2e1a;color:#00e676;position:sticky;left:0;z-index:1}
 .fc-tbl tr.fc-acum td{font-weight:600;background:#061a0d;color:#00c853}
-.fc-tbl tr.fc-acum td:first-child{background:#061a0d;color:#00c853}
+.fc-tbl tr.fc-acum td:first-child{background:#061a0d;color:#00c853;position:sticky;left:0;z-index:1}
 .fc-col-neg{color:var(--red)!important}
 .fc-col-pos{color:var(--green)!important}
 /* LOGO UPLOAD */
@@ -142,6 +142,14 @@ tr:hover td{background:#1e2229}
 .modal-hd h2{font-size:15px;font-weight:700;color:#00e676}
 .close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text2);line-height:1}
 .empty{text-align:center;padding:36px 16px;color:var(--text3);font-size:13px}
+.expand-btn{background:none;border:none;color:#00e676;cursor:pointer;font-size:11px;padding:0 4px;margin-right:4px;transition:transform .2s;display:inline-block}
+.expand-btn.open{transform:rotate(90deg)}
+.sub-row{display:none}
+.sub-row.open{display:table-row}
+.dre-tbl tr.sub-item td{padding-left:44px;color:var(--text2);font-size:11px;background:#0d0f14;border-bottom:0.5px solid #1e2229}
+.dre-tbl tr.sub-item td:first-child{color:var(--text3)}
+.fc-tbl tr.fc-sub-item td{color:var(--text2);font-size:11px;background:#0d0f14;border-bottom:0.5px solid #1e2229}
+.fc-tbl tr.fc-sub-item td:first-child{padding-left:32px;color:var(--text3);position:sticky;left:0;background:#0d0f14;z-index:1}
 .divider{height:1px;background:var(--border);margin:16px 0}
 .info-box{background:#0a2e1a;border:1px solid #00e67630;border-radius:var(--radius);padding:10px 14px;font-size:12px;color:#00e676;margin-bottom:14px;display:flex;align-items:flex-start;gap:8px}
 .toast{position:fixed;bottom:24px;right:24px;background:#0a2e1a;color:#00e676;border:1px solid #00e67640;padding:12px 18px;border-radius:var(--radius);font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 4px 20px rgba(0,230,118,.2)}
@@ -1097,123 +1105,130 @@ async function abrirEdicaoProjecao(id){
 }
 
 // DRE
+function toggleDREGroup(btn,gid){
+  btn.classList.toggle('open');
+  document.querySelectorAll('.dsub-'+gid).forEach(r=>r.classList.toggle('open'));
+}
 async function renderDRE(){
   const mes=parseInt(document.getElementById('dre-mes').value);
   const ano=parseInt(document.getElementById('dre-ano').value)||2026;
   document.getElementById('dre-content').innerHTML='<div class="empty">Carregando...</div>';
   const all=(await getAllData(ano)).filter(i=>mes===0||i.mes===mes);
-  const sum=t=>all.filter(i=>i.tipo===t).reduce((a,b)=>a+b.valor,0);
-  const recVal=sum('receita'),ded=sum('deducao'),recLiq=recVal-ded;
-  const cus=sum('custo'),lb=recLiq-cus;
-  const dc=sum('despesa_com'),da=sum('despesa_adm'),lop=lb-dc-da;
-  const fr=sum('fin_rec'),fd=sum('fin_desp'),res=lop+fr-fd;
   const label=mes===0?`Acumulado ${ano}`:MESES[mes]+'/'+ano;
   const isAdmin=currentRole==='admin';
-  const N=(v,tipo)=>{const cls=v>=0?'pos':'neg';const click=isAdmin&&tipo?`class="num ${cls} clickable" onclick="openDetail('${tipo}',${mes},${ano})" title="Ver detalhamento"`:`class="num ${cls}"`;return`<span ${click}>${fmtN(v)}</span>`;};
-  const R=(lbl,v,cls,tipo,indent)=>`<tr class="${cls}"><td style="padding-left:${indent||8}px">${lbl}</td><td>${N(v,tipo)}</td></tr>`;
+  const sumT=t=>all.filter(i=>i.tipo===t).reduce((a,b)=>a+b.valor,0);
+  const subT=t=>{
+    const m={};
+    all.filter(i=>i.tipo===t).forEach(i=>{const k=i.descricao||'Outros';m[k]=(m[k]||0)+i.valor;});
+    return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+  };
+  const rec=sumT('receita'),ded=sumT('deducao'),recLiq=rec-ded,cus=sumT('custo'),lb=recLiq-cus;
+  const dc=sumT('despesa_com'),da=sumT('despesa_adm'),lop=lb-dc-da;
+  const fr=sumT('fin_rec'),fd=sumT('fin_desp'),res=lop+fr-fd;
+  let gid=0;
+  const GRP=(lbl,v,tipo,neg=false)=>{
+    const id='d'+(gid++);
+    const subs=subT(tipo);
+    const btn=subs.length?`<button class="expand-btn" onclick="toggleDREGroup(this,'${id}')" title="Expandir">&#9654;</button>`:'<span style="width:16px;display:inline-block"></span>';
+    const disp=neg?fmtN(-Math.abs(v)):fmtN(v);
+    const cls=(neg?-v:v)>=0?'pos':'neg';
+    const numEl=isAdmin&&tipo?`<span class="num ${cls} clickable" onclick="openDetail('${tipo}',${mes},${ano})">${disp}</span>`:`<span class="num ${cls}">${disp}</span>`;
+    const subRows=subs.map(([desc,val])=>{
+      const sv=neg?-Math.abs(val):val;
+      return`<tr class="sub dsub-${id} sub-row"><td style="padding-left:40px;font-size:11px;color:var(--text3)">↳ ${desc}</td><td class="num ${sv>=0?'pos':'neg'}" style="font-size:11px">${fmtN(sv)}</td></tr>`;
+    }).join('');
+    return`<tr class="grp"><td style="padding-left:8px">${btn}${lbl}</td><td>${numEl}</td></tr>${subRows}`;
+  };
+  const TOT=(lbl,v)=>`<tr class="subtotal"><td style="padding-left:8px;font-weight:700">${lbl}</td><td class="num ${v>=0?'pos':'neg'}" style="font-weight:700">${fmtN(v)}</td></tr>`;
+  const SP=`<tr class="spacer"><td colspan="2"></td></tr>`;
   document.getElementById('dre-content').innerHTML=`
-  <div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:600">${label}</div>
-  <table class="dre-tbl"><thead><tr><th>Categoria</th><th style="width:200px">${label}</th></tr></thead><tbody>
-  ${R('Receitas operacionais',recVal,'grp','receita',8)}${R('Receita de vendas',recVal,'sub','receita',28)}
-  <tr class="spacer"><td colspan="2"></td></tr>
-  ${R('(−) Deduções da receita bruta',-ded,'grp','deducao',8)}${R('Descontos e devoluções',-ded,'sub','deducao',28)}
-  <tr class="subtotal"><td style="padding-left:8px">Receita líquida de vendas</td><td>${N(recLiq,null)}</td></tr>
-  <tr class="spacer"><td colspan="2"></td></tr>
-  ${R('(−) Custos operacionais',-cus,'grp','custo',8)}${R('Custo das vendas / produtos',-cus,'sub','custo',28)}
-  <tr class="subtotal"><td style="padding-left:8px">Lucro bruto</td><td>${N(lb,null)}</td></tr>
-  <tr class="spacer"><td colspan="2"></td></tr>
-  ${R('(−) Despesas operacionais',-(dc+da),'grp',null,8)}${R('Despesas comerciais',-dc,'sub','despesa_com',28)}${R('Despesas administrativas',-da,'sub','despesa_adm',28)}
-  <tr class="subtotal"><td style="padding-left:8px">Lucro / Prejuízo operacional</td><td>${N(lop,null)}</td></tr>
-  <tr class="spacer"><td colspan="2"></td></tr>
-  ${R('Receitas financeiras',fr,'grp','fin_rec',8)}${R('(−) Despesas financeiras',-fd,'grp','fin_desp',8)}
-  <tr class="grand"><td style="padding-left:8px">Resultado líquido do exercício</td><td>${N(res,null)}</td></tr>
+  <div style="font-size:11px;color:var(--text2);margin-bottom:10px;display:flex;gap:16px;align-items:center">
+    <span><span style="color:#00e676">&#9654;</span> clique na categoria para ver subcategorias</span>
+    ${isAdmin?'<span style="color:#00e676;margin-left:auto">valores sublinhados = detalhamento completo</span>':''}
+  </div>
+  <table class="dre-tbl"><thead><tr><th>${label}</th><th style="width:180px;text-align:right">${label}</th></tr></thead><tbody>
+  ${GRP('Receitas operacionais',rec,'receita')}${SP}
+  ${GRP('(−) Deduções da receita bruta',ded,'deducao',true)}
+  ${TOT('Receita líquida de vendas',recLiq)}${SP}
+  ${GRP('(−) Custos operacionais',cus,'custo',true)}
+  ${TOT('Lucro bruto',lb)}${SP}
+  ${GRP('(−) Despesas comerciais',dc,'despesa_com',true)}
+  ${GRP('(−) Despesas administrativas',da,'despesa_adm',true)}
+  ${TOT('Lucro / Prejuízo operacional',lop)}${SP}
+  ${GRP('Receitas financeiras',fr,'fin_rec')}
+  ${GRP('(−) Despesas financeiras',fd,'fin_desp',true)}
+  <tr class="grand"><td style="padding-left:8px">Resultado líquido do exercício</td><td class="num ${res>=0?'pos':'neg'}">${fmtN(res)}</td></tr>
   </tbody></table>`;
 }
 
+
 // FLUXO DE CAIXA POR COMPETÊNCIA
+function toggleFCGroup(btn,gid){
+  btn.classList.toggle('open');
+  document.querySelectorAll('.fcsub-'+gid).forEach(r=>r.classList.toggle('open'));
+}
 async function renderFluxo(){
   const ano=parseInt(document.getElementById('fc-ano').value)||2026;
   document.getElementById('fluxo-content').innerHTML='<div class="empty">Carregando...</div>';
-  const all=await getAllData(ano);
+  const allData=await getAllData(ano);
   const isAdmin=currentRole==='admin';
-
   const porMes={};
+  const porMesSubs={};
   for(let m=1;m<=12;m++){
-    const items=all.filter(i=>i.mes===m);
-    const sum=t=>items.filter(i=>i.tipo===t).reduce((a,b)=>a+b.valor,0);
-    const rec=sum('receita'),ded=sum('deducao'),recLiq=rec-ded;
-    const cus=sum('custo'),lb=recLiq-cus;
-    const dc=sum('despesa_com'),da=sum('despesa_adm'),desp=dc+da;
-    const lop=lb-desp;
-    const fr=sum('fin_rec'),fd=sum('fin_desp'),res=lop+fr-fd;
+    const items=allData.filter(i=>i.mes===m);
+    const sumT=t=>items.filter(i=>i.tipo===t).reduce((a,b)=>a+b.valor,0);
+    const subT=t=>{
+      const map={};
+      items.filter(i=>i.tipo===t).forEach(i=>{const k=i.descricao||'Outros';map[k]=(map[k]||0)+i.valor;});
+      return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+    };
+    const rec=sumT('receita'),ded=sumT('deducao'),recLiq=rec-ded,cus=sumT('custo'),lb=recLiq-cus;
+    const dc=sumT('despesa_com'),da=sumT('despesa_adm'),desp=dc+da,lop=lb-desp;
+    const fr=sumT('fin_rec'),fd=sumT('fin_desp'),res=lop+fr-fd;
     porMes[m]={rec,ded,recLiq,cus,lb,dc,da,desp,lop,fr,fd,res};
+    porMesSubs[m]={rec:subT('receita'),ded:subT('deducao'),cus:subT('custo'),dc:subT('despesa_com'),da:subT('despesa_adm'),fr:subT('fin_rec'),fd:subT('fin_desp')};
   }
-
-  let acum=0;
-  const acums={};
+  let acum=0;const acums={};
   for(let m=1;m<=12;m++){acum+=porMes[m].res;acums[m]=acum;}
-
   const cols=Array.from({length:12},(_,i)=>i+1);
-
-  // Mapeamento chave → tipo(s) DRE para detalhamento
-  const keyToTipos={
-    rec:['receita'], ded:['deducao'], recLiq:['receita','deducao'],
-    cus:['custo'], dc:['despesa_com'], da:['despesa_adm'],
-    desp:['despesa_com','despesa_adm'], lop:['receita','deducao','custo','despesa_com','despesa_adm'],
-    fr:['fin_rec'], fd:['fin_desp'], res:null
-  };
-
-  const fcN=(v)=>{
-    if(v===0)return`<span style="color:var(--text3)">—</span>`;
-    const cls=v>=0?'fc-col-pos':'fc-col-neg';
-    return`<span class="${cls}">${fmtN(v)}</span>`;
-  };
-
-  // Célula clicável quando admin e há dados
-  // Registra mapeamento global para os cliques do fluxo
-  window._fcTiposMap=keyToTipos;
+  window._fcTiposMap={rec:['receita'],ded:['deducao'],recLiq:['receita','deducao'],cus:['custo'],dc:['despesa_com'],da:['despesa_adm'],desp:['despesa_com','despesa_adm'],lop:['receita','deducao','custo','despesa_com','despesa_adm'],fr:['fin_rec'],fd:['fin_desp'],res:null};
   window._fcAno=ano;
-
-  const fcCell=(v,key,mes)=>{
-    const tipos=keyToTipos[key];
-    if(!isAdmin||!tipos||v===0)return fcN(v);
-    const cls=v>=0?'fc-col-pos':'fc-col-neg';
-    const tiposEncoded=encodeURIComponent(JSON.stringify(tipos));
-    return`<span class="${cls} fc-clickable" onclick="handleFcClick('${key}',${mes})" title="Clique para ver detalhamento">${fmtN(v)}</span>`;
+  const fcN=v=>{if(v===0)return`<span style="color:var(--text3)">—</span>`;const cls=v>=0?'fc-col-pos':'fc-col-neg';return`<span class="${cls}">${fmtN(v)}</span>`;};
+  const fcC=(v,key,m)=>{const tipos=window._fcTiposMap[key];if(!isAdmin||!tipos||v===0)return fcN(v);const cls=v>=0?'fc-col-pos':'fc-col-neg';return`<span class="${cls} fc-clickable" onclick="handleFcClick('${key}',${m})">${fmtN(v)}</span>`;};
+  let fgid=0;
+  const FROW=(lbl,key,neg=false,isTotal=false)=>{
+    const id='fc'+(fgid++);
+    const cls=isTotal?'fc-total':'fc-sub';
+    const total=cols.reduce((s,m)=>s+(porMes[m][key]||0),0);
+    const dispTotal=neg?fcN(-Math.abs(total)):fcN(total);
+    const cells=cols.map(m=>{const v=porMes[m][key]||0;return`<td>${neg?fcC(-Math.abs(v),key,m):fcC(v,key,m)}</td>`;}).join('');
+    // Sub-items
+    const allSubs={};
+    cols.forEach(m=>{(porMesSubs[m][key]||[]).forEach(([desc,val])=>{if(!allSubs[desc])allSubs[desc]=Array(13).fill(0);allSubs[desc][m]=val;});});
+    const subKeys=Object.keys(allSubs);
+    const hasItems=subKeys.length>1||(subKeys.length===1&&subKeys[0]!=='Outros');
+    const btn=hasItems&&!isTotal?`<button class="expand-btn" onclick="toggleFCGroup(this,'${id}')" title="Expandir">&#9654;</button>`:'<span style="width:16px;display:inline-block"></span>';
+    const subRows=hasItems&&!isTotal?subKeys.map(desc=>{
+      const subCells=cols.map(m=>{const sv=allSubs[desc][m]||0;if(!sv)return`<td><span style="color:var(--text3)">—</span></td>`;const cls2=(neg?-sv:sv)>=0?'fc-col-pos':'fc-col-neg';return`<td><span class="${cls2}">${fmtN(neg?-sv:sv)}</span></td>`;}).join('');
+      const subTot=cols.reduce((s,m)=>s+(allSubs[desc][m]||0),0);
+      const cls2=(neg?-subTot:subTot)>=0?'fc-col-pos':'fc-col-neg';
+      return`<tr class="fc-sub fcsub-${id} sub-row"><td style="padding-left:28px;font-size:10px;color:var(--text3);position:sticky;left:0;background:#0d0f14;z-index:1">↳ ${desc}</td>${subCells}<td class="${cls2}" style="font-size:10px">${fmtN(neg?-subTot:subTot)}</td></tr>`;
+    }).join(''):'';
+    return`<tr class="${cls}"><td>${btn}${lbl}</td>${cells}<td>${dispTotal}</td></tr>${subRows}`;
   };
-
-  const rows=[
-    {label:'ENTRADAS',cls:'fc-grp',key:null},
-    {label:'Receita operacional',cls:'fc-sub',key:'rec'},
-    {label:'(−) Deduções',cls:'fc-sub',key:'ded',neg:true},
-    {label:'Receita líquida',cls:'fc-total',key:'recLiq'},
-    {label:'SAÍDAS OPERACIONAIS',cls:'fc-grp',key:null},
-    {label:'(−) Custos operacionais',cls:'fc-sub',key:'cus',neg:true},
-    {label:'(−) Despesas comerciais',cls:'fc-sub',key:'dc',neg:true},
-    {label:'(−) Despesas administrativas',cls:'fc-sub',key:'da',neg:true},
-    {label:'Total saídas operacionais',cls:'fc-total',key:'desp',neg:true},
-    {label:'RESULTADO OPERACIONAL',cls:'fc-total',key:'lop'},
-    {label:'FINANCEIRO',cls:'fc-grp',key:null},
-    {label:'Receitas financeiras',cls:'fc-sub',key:'fr'},
-    {label:'(−) Despesas financeiras',cls:'fc-sub',key:'fd',neg:true},
-  ];
-
-  const hint=isAdmin?'<div style="font-size:12px;color:var(--text2);margin-bottom:8px"><i class="ti ti-info-circle"></i> Clique em qualquer valor sublinhado para ver o detalhamento</div>':'';
-  const thead=`<tr><th style="text-align:left;position:sticky;left:0;background:#fff;min-width:200px">Categoria</th>${cols.map(m=>`<th>${MESES[m].substring(0,3)}</th>`).join('')}<th>Total</th></tr>`;
-  const tbody=rows.map(r=>{
-    if(!r.key)return`<tr class="${r.cls}"><td>${r.label}</td>${cols.map(()=>'<td></td>').join('')}<td></td></tr>`;
-    const total=cols.reduce((s,m)=>s+(porMes[m][r.key]||0),0);
-    const dispV=(v,key,mes)=>r.neg?fcCell(-Math.abs(v),key,mes):fcCell(v,key,mes);
-    const totalDisp=r.neg?fcN(-Math.abs(total)):fcN(total);
-    return`<tr class="${r.cls}"><td>${r.label}</td>${cols.map(m=>`<td>${dispV(porMes[m][r.key],r.key,m)}</td>`).join('')}<td>${totalDisp}</td></tr>`;
-  }).join('');
-
+  const FGRP=(lbl)=>`<tr class="fc-grp"><td>${lbl}</td>${cols.map(()=>'<td></td>').join('')}<td></td></tr>`;
+  const FTOT=(lbl,key,neg=false)=>{const total=cols.reduce((s,m)=>s+(porMes[m][key]||0),0);const dt=neg?fcN(-Math.abs(total)):fcN(total);return`<tr class="fc-total"><td style="font-weight:700">${lbl}</td>${cols.map(m=>{const v=porMes[m][key]||0;return`<td>${neg?fcC(-Math.abs(v),key,m):fcC(v,key,m)}</td>`;}).join('')}<td>${dt}</td></tr>`;};
+  const hint=isAdmin?'<div style="font-size:11px;color:var(--text2);margin-bottom:8px"><span style="color:#00e676">&#9654;</span> expandir subcategorias &nbsp;|&nbsp; <span style="color:#00e676">sublinhado</span> = detalhamento</div>':'';
+  const thead=`<tr><th style="min-width:200px">${ano}</th>${cols.map(m=>`<th>${MESES[m].substring(0,3)}</th>`).join('')}<th>Total</th></tr>`;
   const totalAnual=cols.reduce((s,m)=>s+porMes[m].res,0);
   const saldoRow=`<tr class="fc-saldo"><td>SALDO DO PERÍODO</td>${cols.map(m=>`<td>${fcN(porMes[m].res)}</td>`).join('')}<td>${fcN(totalAnual)}</td></tr>`;
   const acumRow=`<tr class="fc-acum"><td>Saldo acumulado</td>${cols.map(m=>`<td>${fcN(acums[m])}</td>`).join('')}<td></td></tr>`;
-
-  document.getElementById('fluxo-content').innerHTML=hint+`<table class="fc-tbl"><thead>${thead}</thead><tbody>${tbody}${saldoRow}${acumRow}</tbody></table>`;
-
+  document.getElementById('fluxo-content').innerHTML=hint+`<table class="fc-tbl"><thead>${thead}</thead><tbody>
+  ${FGRP('ENTRADAS')}${FROW('Receita operacional','rec')}${FROW('(−) Deduções','ded',true)}${FTOT('Receita líquida','recLiq')}
+  ${FGRP('SAÍDAS OPERACIONAIS')}${FROW('(−) Custos operacionais','cus',true)}${FROW('(−) Despesas comerciais','dc',true)}${FROW('(−) Despesas administrativas','da',true)}${FTOT('Total saídas','desp',true)}
+  ${FTOT('RESULTADO OPERACIONAL','lop')}
+  ${FGRP('FINANCEIRO')}${FROW('Receitas financeiras','fr')}${FROW('(−) Despesas financeiras','fd',true)}
+  ${saldoRow}${acumRow}</tbody></table>`;
   const recTotal=cols.reduce((s,m)=>s+porMes[m].rec,0);
   const despTotal=cols.reduce((s,m)=>s+porMes[m].desp+porMes[m].cus,0);
   const melhorMes=cols.reduce((best,m)=>porMes[m].res>porMes[best].res?m:best,1);
@@ -1223,6 +1238,7 @@ async function renderFluxo(){
     <div class="metric-card"><div class="metric-label">Resultado anual</div><div class="metric-value ${totalAnual>=0?'pos':'neg'}">${fmtN(totalAnual)}</div></div>
     <div class="metric-card"><div class="metric-label">Melhor mês</div><div class="metric-value" style="font-size:16px">${MESES[melhorMes]}</div></div>`;
 }
+
 
 function handleFcClick(key,mes){
   const tipos=window._fcTiposMap?window._fcTiposMap[key]:null;
