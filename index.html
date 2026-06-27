@@ -139,6 +139,14 @@ tr:hover td{background:var(--surface2)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text2)}
 .loading-screen i{font-size:32px;color:var(--blue)}
+.modal-edit{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;width:520px;max-width:100%;max-height:90vh;overflow-y:auto}
+.cat-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;margin:2px}
+.cat-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.color-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:6px}
+.color-opt{width:28px;height:28px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all .15s}
+.color-opt.selected{border-color:var(--text);transform:scale(1.15)}
+.edit-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;padding:16px}
+.edit-overlay.open{display:flex}
 </style>
 </head>
 <body>
@@ -185,6 +193,7 @@ tr:hover td{background:var(--surface2)}
       <button class="tab" onclick="switchTab('recorrentes')" id="tab-recorrentes" style="display:none"><i class="ti ti-repeat"></i> Fixas/Variáveis</button>
       <button class="tab" onclick="switchTab('projecao')" id="tab-projecao" style="display:none"><i class="ti ti-trending-up"></i> Projeção</button>
       <button class="tab" onclick="switchTab('configuracoes')" id="tab-configuracoes" style="display:none"><i class="ti ti-settings"></i> Config.</button>
+      <button class="tab" onclick="switchTab('categorias')" id="tab-categorias" style="display:none"><i class="ti ti-tag"></i> Categorias</button>
       <button class="tab" onclick="switchTab('usuarios')" id="tab-usuarios" style="display:none"><i class="ti ti-users"></i> Usuários</button>
     </div>
     <div class="topbar-right">
@@ -536,6 +545,45 @@ tr:hover td{background:var(--surface2)}
       </div>
     </div>
 
+    <!-- CATEGORIAS -->
+    <div id="panel-categorias" class="panel">
+      <div class="grid2" style="margin-bottom:14px;align-items:start">
+        <div class="card">
+          <div class="card-title"><i class="ti ti-tag"></i> Nova categoria</div>
+          <label class="first">Nome da categoria</label>
+          <input id="cat-nome" placeholder="Ex: Mensalidades, Folha de pagamento..."/>
+          <label>Tipo DRE</label>
+          <select id="cat-tipo">
+            <option value="receita">Receita operacional</option>
+            <option value="deducao">Dedução da receita</option>
+            <option value="custo">Custo operacional</option>
+            <option value="despesa_adm">Despesa administrativa</option>
+            <option value="despesa_com">Despesa comercial</option>
+            <option value="fin_rec">Receita financeira</option>
+            <option value="fin_desp">Despesa financeira</option>
+          </select>
+          <label>Cor de identificação</label>
+          <div class="color-grid" id="color-grid-cat">
+            <div class="color-opt selected" data-cor="#185FA5" style="background:#185FA5" onclick="selectCor(this,'cat')"></div>
+            <div class="color-opt" data-cor="#3B6D11" style="background:#3B6D11" onclick="selectCor(this,'cat')"></div>
+            <div class="color-opt" data-cor="#A32D2D" style="background:#A32D2D" onclick="selectCor(this,'cat')"></div>
+            <div class="color-opt" data-cor="#854F0B" style="background:#854F0B" onclick="selectCor(this,'cat')"></div>
+            <div class="color-opt" data-cor="#534AB7" style="background:#534AB7" onclick="selectCor(this,'cat')"></div>
+            <div class="color-opt" data-cor="#0F6E56" style="background:#0F6E56" onclick="selectCor(this,'cat')"></div>
+            <div class="color-opt" data-cor="#993C1D" style="background:#993C1D" onclick="selectCor(this,'cat')"></div>
+            <div class="color-opt" data-cor="#5a6072" style="background:#5a6072" onclick="selectCor(this,'cat')"></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn primary" id="btn-add-cat" onclick="addCategoria()"><i class="ti ti-check"></i> Adicionar</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-list"></i> Categorias cadastradas</div>
+          <div id="tabela-categorias"><div class="empty">Carregando...</div></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -547,6 +595,46 @@ tr:hover td{background:var(--surface2)}
   <div class="modal" style="width:500px"><div class="modal-hd"><h2 id="recibo-title">Comprovante</h2><button class="close-btn" onclick="closeRecibo(null,true)">×</button></div><div id="recibo-content"></div></div>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- MODAL EDITAR LANÇAMENTO -->
+<div class="edit-overlay" id="edit-overlay" onclick="closeEdit(event)">
+  <div class="modal-edit">
+    <div class="modal-hd">
+      <h2>Editar lançamento</h2>
+      <button class="close-btn" onclick="closeEdit(null,true)">×</button>
+    </div>
+    <input type="hidden" id="edit-id"/>
+    <input type="hidden" id="edit-table"/>
+    <label class="first">Tipo de conta</label>
+    <select id="edit-tipo">
+      <option value="receita">Receita</option>
+      <option value="deducao">Dedução da receita</option>
+      <option value="custo">Custo operacional</option>
+      <option value="despesa_com">Despesa comercial</option>
+      <option value="despesa_adm">Despesa administrativa</option>
+      <option value="fin_rec">Receita financeira</option>
+      <option value="fin_desp">Despesa financeira</option>
+    </select>
+    <label>Descrição</label>
+    <input id="edit-desc" placeholder="Descrição do lançamento"/>
+    <div class="form-row cols2">
+      <div><label>Valor (R$)</label><input id="edit-valor" type="number" min="0" step="0.01"/></div>
+      <div><label>Mês</label>
+        <select id="edit-mes">
+          <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+          <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+          <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+          <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+        </select>
+      </div>
+    </div>
+    <div><label>Ano</label><input id="edit-ano" type="number" value="2026" min="2020" max="2040"/></div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn primary" onclick="salvarEdicao()"><i class="ti ti-check"></i> Salvar alteração</button>
+      <button class="btn" onclick="closeEdit(null,true)">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const SUPABASE_URL='https://kkjtadyyofcmmqaothki.supabase.co';
@@ -596,7 +684,7 @@ async function loadUserRole(user){
   rb.textContent=currentRole==='admin'?'Administrador':'Visualizador';
   rb.className='role-badge '+(currentRole==='admin'?'admin':'viewer');
   if(currentRole==='admin'){
-    ['tab-lancamentos','tab-recorrentes','tab-projecao','tab-configuracoes','tab-usuarios'].forEach(id=>document.getElementById(id).style.display='');
+    ['tab-lancamentos','tab-recorrentes','tab-projecao','tab-configuracoes','tab-categorias','tab-usuarios'].forEach(id=>document.getElementById(id).style.display='');
     document.getElementById('dre-click-hint').innerHTML='<i class="ti ti-info-circle"></i> Clique em qualquer valor sublinhado para ver o detalhamento';
   }
 }
@@ -628,6 +716,7 @@ function switchTab(t){
   if(t==='configuracoes')loadConfiguracoes();
   if(t==='usuarios')renderUsuarios();
   if(t==='graficos')renderGraficos();
+  if(t==='categorias')renderCategorias();
 }
 
 function fmt(v){return'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
@@ -687,7 +776,7 @@ async function renderTabela(){
   const el=document.getElementById('tabela-lancamentos');
   if(error||!data?.length){el.innerHTML='<div class="empty">Nenhum lançamento para este período.</div>';updateSummary([]);return;}
   el.innerHTML=`<table><thead><tr><th>Mês/Ano</th><th>Tipo</th><th>Descrição</th><th style="text-align:right">Valor</th><th>Recibo</th><th></th></tr></thead><tbody>`+
-    data.map(l=>`<tr><td>${MESES[l.mes]}/${l.ano}</td><td><span class="badge ${l.tipo}">${TIPOS_LABEL[l.tipo]}</span></td><td>${l.descricao}</td><td class="num">${fmt(l.valor)}</td><td>${l.file_path?`<button class="btn sm" onclick="verComprovante('${l.file_path}','${l.descricao}')"><i class="ti ti-paperclip"></i></button>`:'—'}</td><td><button class="btn danger" onclick="remLancamento('${l.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('')+'</tbody></table>';
+    data.map(l=>`<tr><td>${MESES[l.mes]}/${l.ano}</td><td><span class="badge ${l.tipo}">${TIPOS_LABEL[l.tipo]}</span></td><td>${l.descricao}</td><td class="num">${fmt(l.valor)}</td><td>${l.file_path?`<button class="btn sm" onclick="verComprovante('${l.file_path}','${l.descricao}')"><i class="ti ti-paperclip"></i></button>`:'—'}</td><td style="display:flex;gap:4px"><button class="btn sm" onclick="abrirEdicao('lancamentos','${l.id}','${l.tipo}','${(l.descricao||'').replace(/'/g,"\\'")}',${l.valor},${l.mes},${l.ano})"><i class="ti ti-pencil"></i></button><button class="btn danger" onclick="remLancamento('${l.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('')+'</tbody></table>';
   updateSummary(data);
 }
 async function remLancamento(id){if(!confirm('Remover?'))return;await sb.from('lancamentos').delete().eq('id',id);toast('Removido.');renderTabela();}
@@ -892,22 +981,32 @@ async function openDetail(tipo,mes,ano){
   const label=mes===0?`Acumulado ${ano}`:MESES[mes]+'/'+ano;
   document.getElementById('modal-title').textContent=TIPOS_LABEL[tipo]+' — '+label;
   const total=all.reduce((a,b)=>a+b.valor,0);
+  const srcLabel={undefined:'Avulso',null:'Avulso',recorrente:'Recorrente',projecao:'Projeção'};
   document.getElementById('modal-content').innerHTML=!all.length
-    ?'<div class="empty">Sem lançamentos nesta categoria.</div>'
-    :`<table style="width:100%;border-collapse:collapse;font-size:13px">
+    ?'<div class="empty">Sem lançamentos nesta categoria para o período selecionado.</div>'
+    :`<div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:var(--text2)">${all.length} lançamento${all.length>1?'s':''}</span>
+        <span style="font-size:13px;font-weight:600;color:var(--blue)">${fmtN(total)}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
       <thead><tr style="border-bottom:1px solid var(--border)">
         <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Mês/Ano</th>
         <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Descrição</th>
         <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Origem</th>
         <th style="padding:6px 8px;text-align:right;font-size:11px;color:var(--text2)">Valor</th>
-        <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Doc</th>
+        <th style="padding:6px 8px;font-size:11px;color:var(--text2)">Ações</th>
       </tr></thead><tbody>
       ${all.map(i=>`<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:6px 8px">${MESES[i.mes]}/${i.ano}</td>
         <td style="padding:6px 8px">${i.descricao||'—'}</td>
-        <td style="padding:6px 8px"><span class="badge proj">${i.source||'Avulso'}</span></td>
+        <td style="padding:6px 8px"><span class="badge proj">${srcLabel[i.source]||i.source||'Avulso'}</span></td>
         <td style="padding:6px 8px" class="num">${fmt(i.valor)}</td>
-        <td style="padding:6px 8px">${i.file_path?`<button class="btn sm" onclick="verComprovante('${i.file_path}','${i.descricao||''}')"><i class="ti ti-paperclip"></i></button>`:'—'}</td>
+        <td style="padding:6px 8px">
+          <div style="display:flex;gap:4px">
+            ${i.file_path?`<button class="btn sm" onclick="verComprovante('${i.file_path}','${i.descricao||''}')"><i class="ti ti-paperclip"></i></button>`:''}
+            ${!i.source||i.source==='Avulso'||i.source===undefined?`<button class="btn sm" onclick="abrirEdicao('lancamentos','${i.id}','${i.tipo}','${(i.descricao||'').replace(/'/g,"\\'")}',${i.valor},${i.mes},${i.ano})"><i class="ti ti-pencil"></i></button>`:''}
+          </div>
+        </td>
       </tr>`).join('')}
       <tr style="font-weight:700;background:var(--surface2)"><td colspan="3" style="padding:7px 8px">Total</td><td style="padding:7px 8px" class="num">${fmt(total)}</td><td></td></tr>
       </tbody></table>`;
